@@ -202,7 +202,7 @@ Expected: `changed` on first run, `failed=0`.
 Run:
 ```bash
 ssh -i ~/.ssh/<your-key> <pi-user>@<pi-host> '
-for b in rigctl flrig fldigi flmsg flamp jtdx direwolf xastir cqrlog klog xlog tqsl SoapySDRUtil rtl_test gqrx gpredict qsstv chirp js8call; do
+for b in rigctl flrig fldigi flmsg flamp jtdx direwolf xastir cqrlog klog xlog tqsl SoapySDRUtil rtl_test gqrx gpredict qsstv chirpw js8call; do
   command -v "$b" >/dev/null 2>&1 && echo "OK  $b" || echo "MISSING $b"
 done'
 ```
@@ -483,7 +483,7 @@ Run:
 ```bash
 ssh -i ~/.ssh/<your-key> <pi-user>@<pi-host> '
 for b in rigctl flrig fldigi flmsg flamp jtdx direwolf xastir cqrlog klog xlog tqsl \
-         SoapySDRUtil rtl_test gqrx gpredict qsstv chirp js8call wsjtx pat; do
+         SoapySDRUtil rtl_test gqrx gpredict qsstv chirpw js8call wsjtx pat; do
   command -v "$b" >/dev/null 2>&1 && echo "OK  $b" || echo "MISSING $b"
 done
 dpkg -l | grep -iE "gridtracker" >/dev/null && echo "OK  gridtracker2" || echo "MISSING gridtracker2"'
