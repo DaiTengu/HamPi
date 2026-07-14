@@ -1,0 +1,10 @@
+# Copy this file to `hampi.ini` (which is gitignored) and fill in your Pi's
+# details. Do NOT commit hampi.ini — it holds host/user/key specifics.
+[hampi]
+<pi-hostname> ansible_host=<pi-ip>
+
+[hampi:vars]
+ansible_user=<pi-user>
+ansible_ssh_private_key_file=~/.ssh/<your-key>
+ansible_python_interpreter=/usr/bin/python3
+ansible_ssh_common_args=-o StrictHostKeyChecking=accept-new
