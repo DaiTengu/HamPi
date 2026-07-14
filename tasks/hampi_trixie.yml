@@ -15,3 +15,8 @@
 - import_playbook: install_sdr_drivers.yml
 - import_playbook: install_antenna_modeling.yml
 - import_playbook: install_sdrplay.yml
+
+#
+# DMR programming tools
+#
+- import_playbook: install_dmr_apps.yml

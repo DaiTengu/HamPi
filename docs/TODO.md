@@ -3,7 +3,7 @@
 Deferred items, captured so they aren't lost. Nothing here blocks the current build.
 
 ## Apps to add later (by group)
-- **DMR / digital voice**: qdmr, DMRHost, DroidStar, BlueDV
+- **DMR programming**: qdmr, dmrconfig — ✅ done (apt). Digital-voice clients deferred (see "Digital voice" below; low priority).
 - **Morse / training**: cw/cwcp/xcwcp, aldo, ebook2cw, qrq, morse2ascii, etc.
 - **Logging extras**: PyQSO, tlf, tucnak, wsjtx-to-n3fjp
 - **WinLink extras**: Patmenu2, ARDOP (piardopc) — were 32-bit-only before; need arm64 sources
@@ -25,6 +25,19 @@ Deferred items, captured so they aren't lost. Nothing here blocks the current bu
   Python↔AGWPE bridge to Direwolf). **Skipped for now** — trial the hosted version
   (web.zenithtracker.org) first to decide if it earns a place in the image. gpredict +
   Xastir already cover satellite + APRS.
+
+## Digital voice (deferred — low priority)
+- **DroidStar** (D-STAR/DMR/YSF/P25/NXDN/M17 client, Qt6/CMake) — **blocked on Trixie**: its
+  CMake `find_package(Qt6 ... CorePrivate)` fails because Debian's `qt6-base-private-dev` ships
+  the private headers but *not* the `Qt6CorePrivate` CMake config (qtbase private modules only).
+  Revisit via a CMake shim, a `find_package` patch + manual private include path, or upstream fix.
+- **md380 software AMBE vocoder (arm64)** — groundwork **done & working** (DroidStar needs it for
+  DMR/AMBE audio; the original `md380_vocoder` is 32-bit-only). Recipe: deps
+  `git cmake g++ xxd unzip python3 libboost-dev`; clone `nostar/md380_vocoder_dynarmic`; then
+  `cd build && cmake .. && make && sh ../makelib.sh` → `build/libmd380_vocoder.a` (self-contained,
+  bundles dynarmic/zydis/fmt/mcl); install the `.a`→/usr/local/lib and `md380_vocoder.h`→/usr/local/include.
+- **BlueDV** — needs an AMBE hardware dongle + AMBEServer; beta distribution. Defer.
+- **DMRHost / dmrlink / brandmeister** — DMR hotspot/network (needs MMDVM hardware). Defer.
 
 ## Not viable on Pi (arm64)
 - **SkyRoof** — Windows-only (.NET/DirectX)
