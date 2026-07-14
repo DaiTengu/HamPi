@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#
+# Milestone-1 build wrapper. Runs the Trixie/Pi 5 playbook from a controller.
+# Requires `ansible-playbook` on PATH (activate your ansible venv first) and a
+# local inventory at inventory/hampi.ini (copy inventory/hampi.ini.example).
+#
+set -euo pipefail
+cd "$(dirname "$0")"
+exec ansible-playbook -i inventory/hampi.ini tasks/hampi_trixie.yml "$@"

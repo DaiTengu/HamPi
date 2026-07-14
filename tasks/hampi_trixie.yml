@@ -1,0 +1,10 @@
+#
+# HamPi Trixie / Pi 5 — Milestone 1 master playbook.
+# Run from a controller: ansible-playbook -i inventory/hampi.ini tasks/hampi_trixie.yml
+# (or use the ./run_trixie wrapper).
+#
+- import_playbook: ../library/set_facts.yml
+- import_playbook: core_apt_apps.yml
+- import_playbook: install_wsjtx.yml
+- import_playbook: install_gridtracker.yml
+- import_playbook: install_pat.yml
