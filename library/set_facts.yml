@@ -15,7 +15,9 @@
       is_iq: False
       is_i386: False
       is_arm: False
+      is_arm_64: False
       is_x86_64: False
+      is_trixie: False
 
   - name: Set facts for ARM CPU
     set_fact:
@@ -28,7 +30,7 @@
       is_arm: True
       is_arm_64: True
       is_x86_64: False
-    when: ansible_architecture == 'armhf' or ansible_architecture == 'armv7l' or ansible_architecture == "aarch64"
+    when: ansible_architecture == "aarch64"
 
   - name: Set facts for 32-bit x86 CPU
     set_fact:
@@ -78,6 +80,15 @@
       is_bookworm: True
       is_jammy: False
     when: (is_debian|bool or is_ubuntu|bool) and ansible_distribution_release == "bookworm"
+
+  - name: Set facts for Debian Trixie
+    set_fact:
+      is_buster: False
+      is_bullseye: False
+      is_bookworm: False
+      is_trixie: True
+      is_jammy: False
+    when: (is_debian|bool or is_ubuntu|bool) and ansible_distribution_release == "trixie"
 
   - name: Set facts for Ubuntu Jammy
     set_fact:
