@@ -54,7 +54,12 @@
         src: /tmp/sdrplay_api_payload/inc/
         dest: /usr/local/include/
         remote_src: yes
-        mode: "0644"
+
+    - name: Ensure /usr/local/include stays traversable (copy mode can clobber the dir's +x)
+      file:
+        path: /usr/local/include
+        state: directory
+        mode: "0755"
 
     - name: Create SDRplay API service directory
       file:
