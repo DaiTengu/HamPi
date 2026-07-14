@@ -1,0 +1,142 @@
+#
+# SDRplay RSP support (Tier 3): proprietary SDRplay API + SoapySDRPlay3 module.
+#
+# The vendor .run is downloaded from sdrplay.com at build time. Its interactive
+# install_lib.sh hangs under automation, so we extract the Makeself payload
+# (--noexec) and place the arm64 files + udev rule + systemd unit ourselves,
+# faithfully reproducing what install_lib.sh 3.15 does. SoapySDRPlay3 is then
+# built from source against the installed API.
+#
+# NOTE: the SDRplay API is proprietary. Downloading at build time is fine;
+# bundling it into a redistributed image needs a license check (packaging pass).
+#
+- name: Install SDRplay RSP support
+  hosts: hampi
+  become: yes
+  tags: sdrplay
+  vars:
+    sdrplay_api_version: "3.15.2"          # vendor .run version
+    sdrplay_api_libver: "3.15"             # libsdrplay_api.so.<libver> in payload
+    sdrplay_service_dir: /opt/sdrplay_api
+    soapy_module_dir: /usr/local/lib/SoapySDR/modules0.8
+  tasks:
+    # ---- SDRplay API (proprietary, from vendor .run) ----
+    - name: Download SDRplay API installer
+      get_url:
+        url: "https://www.sdrplay.com/software/SDRplay_RSP_API-Linux-{{ sdrplay_api_version }}.run"
+        dest: /tmp/sdrplay_api.run
+        mode: "0755"
+      retries: 3
+      delay: 10
+      register: dl
+      until: dl is succeeded
+
+    - name: Extract SDRplay API payload (Makeself, non-interactive)
+      command: /tmp/sdrplay_api.run --noexec --target /tmp/sdrplay_api_payload
+      args:
+        creates: /tmp/sdrplay_api_payload/install_lib.sh
+
+    - name: Install SDRplay API shared library (arm64)
+      copy:
+        src: "/tmp/sdrplay_api_payload/arm64/libsdrplay_api.so.{{ sdrplay_api_libver }}"
+        dest: "/usr/local/lib/libsdrplay_api.so.{{ sdrplay_api_libver }}"
+        remote_src: yes
+        mode: "0644"
+
+    - name: Dev symlink for linking (libsdrplay_api.so)
+      file:
+        src: "libsdrplay_api.so.{{ sdrplay_api_libver }}"
+        dest: /usr/local/lib/libsdrplay_api.so
+        state: link
+
+    - name: Install SDRplay API headers
+      copy:
+        src: /tmp/sdrplay_api_payload/inc/
+        dest: /usr/local/include/
+        remote_src: yes
+        mode: "0644"
+
+    - name: Create SDRplay API service directory
+      file:
+        path: "{{ sdrplay_service_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Install SDRplay API service binary (arm64)
+      copy:
+        src: /tmp/sdrplay_api_payload/arm64/sdrplay_apiService
+        dest: "{{ sdrplay_service_dir }}/sdrplay_apiService"
+        remote_src: yes
+        mode: "0755"
+
+    - name: Install SDRplay udev rules
+      copy:
+        dest: /etc/udev/rules.d/66-sdrplay.rules
+        mode: "0644"
+        content: |
+          SUBSYSTEM=="usb",ENV{DEVTYPE}=="usb_device",ATTRS{idVendor}=="1df7",ATTRS{idProduct}=="2500",MODE:="0666"
+          SUBSYSTEM=="usb",ENV{DEVTYPE}=="usb_device",ATTRS{idVendor}=="1df7",ATTRS{idProduct}=="3000",MODE:="0666"
+          SUBSYSTEM=="usb",ENV{DEVTYPE}=="usb_device",ATTRS{idVendor}=="1df7",ATTRS{idProduct}=="3010",MODE:="0666"
+          SUBSYSTEM=="usb",ENV{DEVTYPE}=="usb_device",ATTRS{idVendor}=="1df7",ATTRS{idProduct}=="3020",MODE:="0666"
+          SUBSYSTEM=="usb",ENV{DEVTYPE}=="usb_device",ATTRS{idVendor}=="1df7",ATTRS{idProduct}=="3030",MODE:="0666"
+          SUBSYSTEM=="usb",ENV{DEVTYPE}=="usb_device",ATTRS{idVendor}=="1df7",ATTRS{idProduct}=="3050",MODE:="0666"
+          SUBSYSTEM=="usb",ENV{DEVTYPE}=="usb_device",ATTRS{idVendor}=="1df7",ATTRS{idProduct}=="3060",MODE:="0666"
+
+    - name: Install SDRplay API systemd service
+      copy:
+        dest: /etc/systemd/system/sdrplay.service
+        mode: "0644"
+        content: |
+          [Unit]
+          Description=SDRplay API Service
+          After=network.target
+          StartLimitIntervalSec=0
+
+          [Service]
+          Type=simple
+          Restart=on-failure
+          RestartSec=1
+          User=root
+          ExecStart={{ sdrplay_service_dir }}/sdrplay_apiService
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Refresh linker cache
+      command: ldconfig
+      changed_when: false
+
+    - name: Enable and start sdrplay API service
+      systemd:
+        name: sdrplay
+        enabled: yes
+        state: started
+        daemon_reload: yes
+
+    # ---- SoapySDRPlay3 module (source build against the API) ----
+    - name: Install SoapySDRPlay3 build dependencies
+      apt:
+        state: present
+        name:
+          - git
+          - cmake
+          - g++
+          - libsoapysdr-dev
+
+    - name: Clone SoapySDRPlay3
+      git:
+        repo: https://github.com/pothosware/SoapySDRPlay3.git
+        dest: /usr/local/src/SoapySDRPlay3
+        version: master
+
+    - name: Build and install SoapySDRPlay3
+      shell: |
+        set -e
+        cd /usr/local/src/SoapySDRPlay3
+        rm -rf build && mkdir build && cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        make -j"$(nproc)"
+        make install
+        ldconfig
+      args:
+        creates: "{{ soapy_module_dir }}/libsdrPlaySupport.so"
