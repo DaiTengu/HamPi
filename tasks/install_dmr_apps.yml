@@ -1,0 +1,16 @@
+#
+# DMR radio programming tools (Trixie apt, arm64).
+# DV clients (DroidStar) and hotspot/AMBE-hardware apps are handled separately.
+#
+- name: Install DMR programming tools
+  hosts: hampi
+  become: yes
+  tags: dmr
+  tasks:
+    - name: apt-install DMR codeplug programmers
+      apt:
+        update_cache: yes
+        state: present
+        name:
+          - qdmr         # DMR codeplug programmer (GUI + dmrconf CLI)
+          - dmrconfig    # alternative DMR codeplug tool (CLI)
