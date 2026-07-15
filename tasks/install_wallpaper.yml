@@ -1,3 +1,5 @@
+# HamPi64 (github.com/DaiTengu/HamPi) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Original HamPi by Dave Slotter (W3DJS); this fork maintained by KD9QHQ. GPL-3.0.
 #
 # HamPi desktop wallpaper → /usr/share/rpd-wallpaper (path unchanged on Trixie).
 # Only the branded wallpaper committed to this fork is installed; the original

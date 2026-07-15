@@ -1,11 +1,18 @@
-# HamPi, formerly known as W3DJS Raspberry Pi for Ham Radio
-HamPi, formerly known as W3DJS Raspberry Pi for Ham Radio
+# HamPi64 — 64-bit Ham Radio for the Raspberry Pi 5
 
-# Documentation
-There is a comprehensive Wiki for HamPi, located here: [https://github.com/dslotter/HamPi/wiki](../../wiki)
+**HamPi64** is the 64-bit edition of **HamPi**, the comprehensive amateur-radio software
+collection for the Raspberry Pi originally created by **Dave Slotter (W3DJS)** (as
+"W3DJS Raspberry Pi for Ham Radio").
 
-# Past Version
-Version 2 of Raspberry Pi Ham Radio Image by W3DJS
+This fork — [**DaiTengu/HamPi**](https://github.com/DaiTengu/HamPi), maintained by
+**KD9QHQ** — updates HamPi for **64-bit Raspberry Pi OS "Trixie" (Debian 13) on the
+Raspberry Pi 5**. Full credit for the original project goes to Dave Slotter and the HamPi
+contributors (see [`CONTRIBUTORS.md`](CONTRIBUTORS.md)). HamPi is free software under the
+**GNU GPL v3**.
+
+## Documentation
+- **This fork:** [`docs/`](docs/) — install guide, coverage map, and roadmap
+- **Original HamPi wiki:** <https://github.com/dslotter/HamPi/wiki>
 
 **General Ham Radio Applications**
 

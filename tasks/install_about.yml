@@ -1,3 +1,5 @@
+# HamPi64 (github.com/DaiTengu/HamPi) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Original HamPi by Dave Slotter (W3DJS); this fork maintained by KD9QHQ. GPL-3.0.
 #
 # "About HamPi" menu entry + branding icons (Pi-only, unconditional).
 # NOTE: the about_hampi script + HamPi.desktop are inherited from W3DJS's HamPi;
@@ -13,6 +15,12 @@
       apt:
         name: zenity
         state: present
+
+    - name: Install /etc/hampi-release (version info read by the About dialog)
+      copy:
+        src: "{{ playbook_dir }}/../files/etc/hampi-release"
+        dest: /etc/hampi-release
+        mode: "0644"
 
     - name: Create hampi icon directories
       file:

@@ -14,6 +14,7 @@
 + Will Sciaroni, W1AZZ
 + Christopher Adden
 + Thomas Bray, W8TJB
++ KD9QHQ (DaiTengu) — HamPi64 maintainer (64-bit Raspberry Pi 5 / Trixie port)
 
 ##### THANK YOU TO ALL HAMPI / HAMPC CONTRIBUTORS!
 
