@@ -62,3 +62,4 @@
 - import_playbook: install_wfview.yml
 - import_playbook: install_sdrpp.yml
 - import_playbook: install_fldigi_suite.yml
+- import_playbook: install_linpsk.yml
