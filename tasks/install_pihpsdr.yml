@@ -1,84 +1,72 @@
+# HamPi64 (github.com/DaiTengu/HamPi) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Original HamPi by Dave Slotter (W3DJS); this fork maintained by KD9QHQ. GPL-3.0.
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# piHPSDR (dl1ycf) — controller for HPSDR / Hermes / Red Pitaya SDR transceivers.
+# Uses the actively-maintained dl1ycf fork (the original g0orx fork is stale).
+# wdsp + rnnoise + libspecbleach are bundled in-repo and built by the Makefile,
+# so no separate DSP-lib clone. GPIO is front-panel buttons via libgpiod (RP1-safe).
 #
-
-- name: Install pihpsdr Software
-  hosts: all
-  gather_facts: no
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install piHPSDR
+  hosts: hampi
+  become: yes
+  tags: pihpsdr
   tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name:
+          - git
+          - build-essential
+          - pkg-config
+          - libgtk-3-dev
+          - libusb-1.0-0-dev
+          - libi2c-dev
+          - libgpiod-dev
+          - libfftw3-dev
+          - libasound2-dev
+          - libpulse-dev
+          - libssl-dev
+          - libcurl4-openssl-dev
+          - libpcap-dev
+          - libaio-dev
+          - libopus-dev
+          - libsqlite3-dev
+          - libminiupnpc-dev
+          - libwebsockets-dev
+          - libavahi-client-dev
+          - libxml2-dev
+          - libzstd-dev
+          - zlib1g-dev
+          - librtlsdr-dev
+          - libhackrf-dev
+          - libiio-dev
+          - libad9361-dev
 
-  - name: Create directory hamradio
-    file:
-      path: /home/{{ ham_user }}/hamradio
-      state: directory
+    - name: Clone piHPSDR (dl1ycf)
+      git:
+        repo: https://github.com/dl1ycf/pihpsdr.git
+        dest: /usr/local/src/pihpsdr
+        depth: 1
 
-  - name: Install dependent libraries
-    become: yes
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - libi2c-dev
-      - libgpiod-dev
+    - name: Build + install piHPSDR (builds bundled wdsp/rnnoise/libspecbleach first)
+      shell: |
+        set -e
+        cd /usr/local/src/pihpsdr
+        make -j"$(nproc)"
+        bin=$(find . -maxdepth 2 -name pihpsdr -type f -executable | head -1)
+        install -m 0755 "$bin" /usr/bin/pihpsdr
+      args:
+        creates: /usr/bin/pihpsdr
 
-#
-# Build and install wdsp
-#
-
-  - name: Download latest wdsp sources
-    git:
-      repo: https://github.com/g0orx/wdsp
-      dest: /home/{{ ham_user }}/hamradio/wdsp
-
-  - name: Build wdsp
-    command: make
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/wdsp
-
-  - name: Install wdsp
-    become: yes
-    command: make install
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/wdsp
-
-  - name: Remove wdsp sources
-    file:
-      path: /home/{{ ham_user }}/hamradio/wdsp
-      state: absent
-
-
-#
-# Build and install pihpsdr
-#
-
-  - name: Download latest pihpsdr sources
-    git:
-      repo: https://github.com/g0orx/pihpsdr
-      dest: /home/{{ ham_user }}/hamradio/pihpsdr
-
-  - name: Build pihpsdr
-    command: make
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/pihpsdr
-
-  - name: Install pihpsdr
-    become: yes
-    command: make install
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/pihpsdr
-
-  - name: Remove pihpsdr sources
-    file:
-      path: /home/{{ ham_user }}/hamradio/pihpsdr
-      state: absent
-
-  - name: Copy pihpsdr.desktop to /usr/share/applications
-    become: yes
-    copy:
-      src: "{{ playbook_dir }}/../files/usr/share/applications/pihpsdr.desktop"
-      dest: /usr/share/applications/pihpsdr.desktop
+    - name: piHPSDR desktop entry
+      copy:
+        dest: /usr/share/applications/pihpsdr.desktop
+        mode: "0644"
+        content: |
+          [Desktop Entry]
+          Name=piHPSDR
+          Comment=Controller for HPSDR / Hermes / Red Pitaya SDR transceivers
+          Exec=pihpsdr
+          Terminal=false
+          Type=Application
+          Categories=HamRadio;
