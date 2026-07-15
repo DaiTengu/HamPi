@@ -3,8 +3,9 @@
 #
 
 - name: Ham Radio Menu Tasks
-  hosts: all
+  hosts: hampi
   gather_facts: no
+  tags: menus
   tasks:
 
   # In recent versions of Debian, extra-xdg-menus

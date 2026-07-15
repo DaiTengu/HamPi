@@ -11,6 +11,13 @@
 - import_playbook: configuration_tasks.yml
 - import_playbook: upgrade_debian_packages.yml
 
+#
+# Desktop integration + branding
+#
+- import_playbook: install_menus.yml
+- import_playbook: install_wallpaper.yml
+- import_playbook: install_about.yml
+
 - import_playbook: core_apt_apps.yml
 - import_playbook: install_wsjtx.yml
 - import_playbook: install_gridtracker.yml

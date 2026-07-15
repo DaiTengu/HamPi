@@ -1,133 +1,53 @@
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# "About HamPi" menu entry + branding icons (Pi-only, unconditional).
+# NOTE: the about_hampi script + HamPi.desktop are inherited from W3DJS's HamPi;
+# content (version/credits) can be updated for the DaiTengu fork later.
 #
-
-- name: About HamPi / HamPC / HamIQ(tm) menu
-  hosts: all
+- name: About HamPi menu entry
+  hosts: hampi
+  become: yes
   gather_facts: no
+  tags: about
   tasks:
+    - name: Install zenity (the About dialog uses it)
+      apt:
+        name: zenity
+        state: present
 
-  - name: Install prerequisite
-    become: yes
-    package:
-      name: zenity
-      state: present
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Create hampi icon directories
+      file:
+        path: "/usr/share/icons/hampi/{{ item }}"
+        state: directory
+        mode: "0755"
+      loop: ["256x256", "128x128", "64x64", "48x48", "32x32"]
 
-  - name: Create /usr/share/icons/hampi/[RESOLUTION] directory
-    become: yes
-    file:
-      path: /usr/share/icons/hampi/{{ item }}
-      state: directory
-      mode: 0755
-    with_items:
-      - 256x256
-      - 128x128
-      - 64x64
-      - 48x48
-      - 32x32
+    - name: Install HamPi icon (top-level)
+      copy:
+        src: "{{ playbook_dir }}/../files/usr/share/icons/hampi.png"
+        dest: /usr/share/icons/hampi.png
+        mode: "0644"
 
-  - name: Create HamPi icon in /usr/share/icons
-    become: yes
-    copy:
-      src: "{{ playbook_dir }}/../files/usr/share/icons/hampi.png"
-      dest: "/usr/share/icons/hampi.png"
-      mode: 0644
+    - name: Install HamPi icon (per resolution)
+      copy:
+        src: "{{ playbook_dir }}/../files/usr/share/icons/hampi/hampi.png"
+        dest: "/usr/share/icons/hampi/{{ item }}/hampi.png"
+        mode: "0644"
+      loop: ["256x256", "128x128", "64x64", "48x48", "32x32"]
 
-  - name: Create HamPi icon in /usr/share/icons/hampi/[RESOLUTION]
-    become: yes
-    copy:
-      src: "{{ playbook_dir }}/../files/usr/share/icons/hampi/hampi.png"
-      dest: "/usr/share/icons/hampi/{{ item }}/hampi.png"
-      mode: 0644
-    with_items:
-      - 256x256
-      - 128x128
-      - 64x64
-      - 48x48
-      - 32x32
+    - name: Install HamPi pixmap
+      copy:
+        src: "{{ playbook_dir }}/../files/usr/share/pixmaps/hampi.png"
+        dest: /usr/share/pixmaps/hampi.png
+        mode: "0644"
 
-  - name: Create /usr/share/pixmaps/hampi/[RESOLUTION] directory
-    become: yes
-    file:
-      path: /usr/share/pixmaps/hampi/{{ item }}
-      state: directory
-      mode: 0755
-    with_items:
-      - 256x256
-      - 128x128
-      - 64x64
-      - 48x48
-      - 32x32
+    - name: Install "About HamPi" desktop entry
+      copy:
+        src: "{{ playbook_dir }}/../files/usr/share/applications/HamPi.desktop"
+        dest: /usr/share/applications/HamPi.desktop
+        mode: "0644"
 
-  - name: Create HamPi icon in /usr/share/pixmaps
-    become: yes
-    copy:
-      src: "{{ playbook_dir }}/../files/usr/share/pixmaps/hampi.png"
-      dest: "/usr/share/pixmaps/hampi.png"
-      mode: 0644
-
-  - name: Create HamPi icon in /usr/share/pixmaps/hampi/[RESOLUTION]
-    become: yes
-    copy:
-      src: "{{ playbook_dir }}/../files/usr/share/pixmaps/hampi/hampi.png"
-      dest: "/usr/share/pixmaps/hampi/{{ item }}/hampi.png"
-      mode: 0644
-    with_items:
-      - 256x256
-      - 128x128
-      - 64x64
-      - 48x48
-      - 32x32
-
-  - name: Create HamPi desktop file in /usr/share/applications
-    become: yes
-    copy:
-      src: "{{ playbook_dir }}/../files/usr/share/applications/HamPi.desktop"
-      dest: "/usr/share/applications/HamPi.desktop"
-      mode: 0644
-    when: is_rpi|bool
-
-  - name: Create HamPi script in /usr/bin
-    become: yes
-    copy:
-      src: "{{ playbook_dir }}/../files/usr/bin/about_hampi"
-      dest: "/usr/bin/about_hampi"
-      mode: 0755
-    when: is_rpi|bool
-
-  - name: Create HamPC desktop file in /usr/share/applications
-    become: yes
-    copy:
-      src: "{{ playbook_dir }}/../files/usr/share/applications/HamPC.desktop"
-      dest: "/usr/share/applications/HamPC.desktop"
-      mode: 0644
-    when: is_pc|bool
-
-  - name: Create HamPC script in /usr/bin
-    become: yes
-    copy:
-      src: "{{ playbook_dir }}/../files/usr/bin/about_hampc"
-      dest: "/usr/bin/about_hampc"
-      mode: 0755
-    when: is_pc|bool
-
-  - name: Create HamIQ desktop file in /usr/share/applications
-    become: yes
-    copy:
-      src: "{{ playbook_dir }}/../files/usr/share/applications/HamIQ.desktop"
-      dest: "/usr/share/applications/HamIQ.desktop"
-      mode: 0644
-    when: is_iq|bool
-
-  - name: Create HamIQ script in /usr/bin
-    become: yes
-    copy:
-      src: "{{ playbook_dir }}/../files/usr/bin/about_hamiq"
-      dest: "/usr/bin/about_hamiq"
-      mode: 0755
-    when: is_iq|bool
-
+    - name: Install about_hampi script
+      copy:
+        src: "{{ playbook_dir }}/../files/usr/bin/about_hampi"
+        dest: /usr/bin/about_hampi
+        mode: "0755"
