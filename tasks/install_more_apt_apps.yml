@@ -1,0 +1,37 @@
+#
+# Additional apt apps across categories (bucket B of the coverage review).
+# Source-only siblings (linpsk, fbb, glfer, hamfax) are deferred — see docs/TODO.md.
+#
+- name: Install additional apt apps
+  hosts: hampi
+  become: yes
+  tags: more_apt
+  tasks:
+    - name: apt-install additional apps
+      apt:
+        update_cache: yes
+        state: present
+        name:
+          # EchoLink / SvxLink
+          - qtel
+          - svxlink-server
+          # PSK / RTTY
+          - psk31lx
+          - twpsk
+          # AX.25 packet stack
+          - libax25
+          - ax25-tools
+          - ax25-apps
+          # AIS receive
+          - gnuais
+          - gnuaisgui
+          # Morse extras
+          - morse
+          - morsegen
+          # Networking (VPN)
+          - wireguard
+          - wireguard-tools
+          # Distributed computing
+          - boinc-client
+          # SDR receiver GUI
+          - cutesdr

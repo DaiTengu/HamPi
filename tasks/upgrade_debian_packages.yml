@@ -1,27 +1,24 @@
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# Full system upgrade + cleanup (Trixie apt).
 #
-
-- name: Upgrade Software
-  hosts: all
-  gather_facts: no
+- name: Upgrade all packages to the latest version
+  hosts: hampi
+  become: yes
+  tags: upgrade
   tasks:
+    - name: apt full-upgrade (dist)
+      apt:
+        update_cache: yes
+        upgrade: dist
+      retries: 5
+      delay: 30
+      register: r
+      until: r is succeeded
 
-  - name: Update all packages to the latest version
-    become: yes
-    apt:
-      upgrade: dist
-    retries: 10
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Autoremove unneeded packages
+      apt:
+        autoremove: yes
 
-  - name: Autoremove unneeded packages
-    become: yes
-    apt:
-      autoremove: yes
-
-  - name: Remove unneeded packages from the cache
-    become: yes
-    apt:
-      autoclean: yes
+    - name: Clean the apt cache
+      apt:
+        autoclean: yes

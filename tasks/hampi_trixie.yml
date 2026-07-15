@@ -4,6 +4,13 @@
 # (or use the ./run_trixie wrapper).
 #
 - import_playbook: ../library/set_facts.yml
+
+#
+# Base configuration + full system upgrade
+#
+- import_playbook: configuration_tasks.yml
+- import_playbook: upgrade_debian_packages.yml
+
 - import_playbook: core_apt_apps.yml
 - import_playbook: install_wsjtx.yml
 - import_playbook: install_gridtracker.yml
@@ -38,3 +45,4 @@
 - import_playbook: install_aprs_extras.yml
 - import_playbook: install_exam.yml
 - import_playbook: install_misc.yml
+- import_playbook: install_more_apt_apps.yml
