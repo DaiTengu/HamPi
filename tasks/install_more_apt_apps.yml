@@ -39,7 +39,7 @@
           - cutesdr
 
     # BOINC ships enabled+running on install; make it opt-in on the image.
-    - name: Disable BOINC by default (user opts in with: systemctl enable --now boinc-client)
+    - name: Disable BOINC by default (opt-in; user enables it via systemctl)
       systemd:
         name: boinc-client
         enabled: no
