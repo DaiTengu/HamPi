@@ -20,3 +20,9 @@
 # DMR programming tools
 #
 - import_playbook: install_dmr_apps.yml
+
+#
+# Morse/CW + additional logging
+#
+- import_playbook: install_morse.yml
+- import_playbook: install_logging_extras.yml
