@@ -8,7 +8,7 @@ Deferred items, captured so they aren't lost. Nothing here blocks the current bu
 - **Logging extras**: PyQSO, tlf, tucnak, wsjtx-to-n3fjp
 - **WinLink extras**: Patmenu2, ARDOP (piardopc) — were 32-bit-only before; need arm64 sources
 - **APRS extras**: aprsdigi, aprx, soundmodem, YAAC
-- **Weather / imaging**: noaa-apt, meteor_decoder, wxtoimg
+- **Weather / imaging**: noaa-apt ✅ done (arm64 prebuilt). Deferred: **medet** (Meteor-M LRPT) — x86-only inline asm in `tim.pas` won't build on aarch64; **wxtoimg** — armhf abandonware. Consider **SatDump** (modern, arm64, multi-satellite) to replace both.
 - Remaining apps from the original playbook, added and tested one group at a time
 
 ## Not in Trixie apt — need source/upstream builds

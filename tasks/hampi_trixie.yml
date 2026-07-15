@@ -26,3 +26,8 @@
 #
 - import_playbook: install_morse.yml
 - import_playbook: install_logging_extras.yml
+
+#
+# Weather / satellite imaging
+#
+- import_playbook: install_weather.yml

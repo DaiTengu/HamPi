@@ -1,0 +1,51 @@
+#
+# Weather / satellite imaging.
+#  - noaa-apt: NOAA APT decoder — official aarch64 prebuilt (Tier 1)
+#
+# Deferred (see docs/TODO.md): medet (Meteor-M LRPT) has x86-only inline asm in
+# tim.pas that won't build on aarch64; wxtoimg is armhf abandonware. SatDump
+# (modern, arm64, multi-satellite) is the recommended replacement for both.
+#
+- name: Install weather / satellite imaging tools
+  hosts: hampi
+  become: yes
+  tags: weather
+  vars:
+    noaa_apt_version: "1.4.1"
+  tasks:
+    - name: Create /opt/noaa-apt
+      file:
+        path: /opt/noaa-apt
+        state: directory
+        mode: "0755"
+
+    - name: Download + unpack noaa-apt (aarch64 prebuilt)
+      unarchive:
+        src: "https://github.com/martinber/noaa-apt/releases/download/v{{ noaa_apt_version }}/noaa-apt-{{ noaa_apt_version }}-aarch64-linux-gnu.zip"
+        dest: /opt/noaa-apt
+        remote_src: yes
+        creates: /opt/noaa-apt/noaa-apt
+      retries: 3
+      delay: 10
+
+    - name: noaa-apt launcher (cd so it finds its res/ dir)
+      copy:
+        dest: /usr/bin/noaa-apt
+        mode: "0755"
+        content: |
+          #!/bin/sh
+          cd /opt/noaa-apt && exec ./noaa-apt "$@"
+
+    - name: noaa-apt desktop entry
+      copy:
+        dest: /usr/share/applications/noaa-apt.desktop
+        mode: "0644"
+        content: |
+          [Desktop Entry]
+          Name=noaa-apt
+          Comment=NOAA APT weather satellite image decoder
+          Exec=noaa-apt
+          Icon=/opt/noaa-apt/res/icon.png
+          Terminal=false
+          Type=Application
+          Categories=HamRadio;Science;
