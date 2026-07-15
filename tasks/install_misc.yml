@@ -1,0 +1,19 @@
+#
+# Miscellaneous ham utilities (Trixie apt, arm64).
+#
+- name: Install miscellaneous ham utilities
+  hosts: hampi
+  become: yes
+  tags: misc
+  tasks:
+    - name: apt-install misc utilities
+      apt:
+        update_cache: yes
+        state: present
+        name:
+          - grig          # Hamlib rig-control GUI
+          - voacapl       # HF propagation prediction (VOACAP)
+          - gpsd          # GPS daemon
+          - gpsd-clients  # GPS client tools (cgps, gpsmon)
+          - xdx           # DX-cluster client
+          - wwl           # Maidenhead distance / azimuth calculator

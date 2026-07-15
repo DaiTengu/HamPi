@@ -1,0 +1,15 @@
+#
+# Ham licence exam / training study tools (Trixie apt, arm64).
+#
+- name: Install exam / training tools
+  hosts: hampi
+  become: yes
+  tags: exam
+  tasks:
+    - name: apt-install exam study tools
+      apt:
+        update_cache: yes
+        state: present
+        name:
+          - fccexam       # US FCC commercial radio licence exam study
+          - hamexam       # US amateur radio licence exam study

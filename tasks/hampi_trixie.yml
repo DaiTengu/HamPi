@@ -31,3 +31,10 @@
 # Weather / satellite imaging
 #
 - import_playbook: install_weather.yml
+
+#
+# APRS extras, exam/training, misc utilities
+#
+- import_playbook: install_aprs_extras.yml
+- import_playbook: install_exam.yml
+- import_playbook: install_misc.yml

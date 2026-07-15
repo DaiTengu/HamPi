@@ -1,0 +1,17 @@
+#
+# Additional APRS tools (Trixie apt, arm64), on top of Xastir + Direwolf (M1).
+# YAAC (Java) is a download, not apt — deferred to the source/download group.
+#
+- name: Install additional APRS tools
+  hosts: hampi
+  become: yes
+  tags: aprs_extras
+  tasks:
+    - name: apt-install APRS extras
+      apt:
+        update_cache: yes
+        state: present
+        name:
+          - aprsdigi      # APRS digipeater
+          - aprx          # APRS digipeater / iGate
+          - soundmodem    # soundcard packet-radio modem
