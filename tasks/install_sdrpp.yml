@@ -1,0 +1,25 @@
+# HamPi64 (github.com/DaiTengu/HamPi) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Original HamPi by Dave Slotter (W3DJS); this fork maintained by KD9QHQ. GPL-3.0.
+#
+# SDR++ (SDRPlusPlus) — official Debian 13/arm64 nightly .deb (Tier 1).
+# Upstream ships only rolling nightlies (no stable tags); this is the exact
+# trixie/aarch64 build. The distro-packaged 'sdrpp' is incompatible — don't use it.
+#
+- name: Install SDR++ (SDRPlusPlus)
+  hosts: hampi
+  become: yes
+  tags: sdrpp
+  tasks:
+    - name: Download SDR++ Trixie arm64 .deb (nightly)
+      get_url:
+        url: "https://github.com/AlexandreRouma/SDRPlusPlus/releases/download/nightly/sdrpp_debian_trixie_aarch64.deb"
+        dest: /tmp/sdrpp.deb
+        mode: "0644"
+      retries: 3
+      delay: 10
+      register: dl
+      until: dl is succeeded
+
+    - name: Install SDR++ (apt resolves deps)
+      apt:
+        deb: /tmp/sdrpp.deb

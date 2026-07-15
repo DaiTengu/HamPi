@@ -55,3 +55,9 @@
 - import_playbook: install_exam.yml
 - import_playbook: install_misc.yml
 - import_playbook: install_more_apt_apps.yml
+
+#
+# Bucket C — upstream prebuilts / source builds
+#
+- import_playbook: install_wfview.yml
+- import_playbook: install_sdrpp.yml
