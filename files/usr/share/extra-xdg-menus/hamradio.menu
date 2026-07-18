@@ -1,96 +1,93 @@
 <!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
  "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+<!-- HamPi64 Ham Radio menu — apps are grouped by function (see hampi64-menu-categories.sh,
+     which tags each .desktop with HamRadio<Group>). The parent has no direct Include, so
+     nothing shows as one flat list; the trailing "Other" menu (OnlyUnallocated) catches any
+     ham app not assigned to a group. -->
 <Menu>
   <Name>Applications</Name>
   <Menu>
     <Name>Hamradio</Name>
     <Directory>HamRadio.directory</Directory>
-    <Include>
-        <Category>HamRadio</Category>
-    </Include>
-    <Menu>
-      <Name>Antenna Analyzer</Name>
-      <Directory>HamRadioAntennaAnalyzer.directory</Directory>
-      <Include>
-        <Category>HamRadio Antenna Analyzer</Category>
-      </Include>
-    </Menu>
-    <Menu>
-      <Name>Name=Automatic Packet Reporting System (APRS)</Name>
-      <Directory>HamRadioAPRS.directory</Directory>
-      <Include>
-        <Category>HamRadio APRS</Category>
-      </Include>
-    </Menu>
-    <Menu>
-      <Name>Name=Calculators</Name>
-      <Directory>HamRadioCalculators.directory</Directory>
-      <Include>
-        <Category>HamRadio Calculators</Category>
-      </Include>
-    </Menu>
-    <Menu>
-      <Name>Name=D-Rats</Name>
-      <Directory>HamRadioD-RATS.directory</Directory>
-      <Include>
-        <Category>HamRadio D-Rats</Category>
-      </Include>
-    </Menu>
-    <Menu>
-      <Name>Fldigi Suite</Name>
-      <Directory>HamRadioFldigi.directory</Directory>
-      <Include>
-        <Category>HamRadio Fldigi</Category>
-      </Include>
-    </Menu>
-    <Menu>
-      <Name>HamClock</Name>
-      <Directory>HamRadioHamClock.directory</Directory>
-      <Include>
-        <Category>HamRadio HamClock</Category>
-      </Include>
-    </Menu>
-    <Menu>
-      <Name>Logging</Name>
-      <Directory>HamRadioLogging.directory</Directory>
-      <Include>
-        <Category>HamRadio Logging</Category>
-      </Include>
-    </Menu>
-    <Menu>
-      <Name>Morse Code</Name>
-      <Directory>HamRadioMorseCode.directory</Directory>
-      <Include>
-        <Category>HamRadio Morse Code</Category>
-      </Include>
-    </Menu>
-    <Menu>
-      <Name>PSK</Name>
-      <Directory>HamRadioPSK.directory</Directory>
-      <Include>
-        <Category>HamRadio PSK</Category>
-      </Include>
-    </Menu>
-    <Menu>
-      <Name>Software Defined Radio (SDR)</Name>
-      <Directory>HamRadioSDR.directory</Directory>
-      <Include>
-        <Category>HamRadio SDR</Category>
-      </Include>
-    </Menu>
-    <Menu>
-      <Name>Training</Name>
-      <Directory>HamRadioTraining.directory</Directory>
-      <Include>
-        <Category>HamRadio Training</Category>
-      </Include>
-    </Menu>
+
     <Menu>
       <Name>Weak Signal</Name>
       <Directory>HamRadioWeakSignal.directory</Directory>
-      <Include>
-        <Category>HamRadio Weak Signal</Category>
-      </Include>
+      <Include><Category>HamRadioWeakSignal</Category></Include>
     </Menu>
-  </Menu> <!-- End hamradio -->
+
+    <Menu>
+      <Name>Fldigi Suite</Name>
+      <Directory>HamRadioFldigi.directory</Directory>
+      <Include><Category>HamRadioFldigi</Category></Include>
+    </Menu>
+
+    <Menu>
+      <Name>Digital Modes</Name>
+      <Directory>HamRadioDigital.directory</Directory>
+      <Include><Category>HamRadioDigital</Category></Include>
+    </Menu>
+
+    <Menu>
+      <Name>Digital Voice &amp; DMR</Name>
+      <Directory>HamRadioDigitalVoice.directory</Directory>
+      <Include><Category>HamRadioDigitalVoice</Category></Include>
+    </Menu>
+
+    <Menu>
+      <Name>SDR &amp; Receivers</Name>
+      <Directory>HamRadioSDR.directory</Directory>
+      <Include><Category>HamRadioSDR</Category></Include>
+    </Menu>
+
+    <Menu>
+      <Name>Rig Control &amp; Programming</Name>
+      <Directory>HamRadioRigControl.directory</Directory>
+      <Include><Category>HamRadioRigControl</Category></Include>
+    </Menu>
+
+    <Menu>
+      <Name>Logging, DX &amp; Contesting</Name>
+      <Directory>HamRadioLogging.directory</Directory>
+      <Include><Category>HamRadioLogging</Category></Include>
+    </Menu>
+
+    <Menu>
+      <Name>APRS &amp; Packet</Name>
+      <Directory>HamRadioAPRS.directory</Directory>
+      <Include><Category>HamRadioAPRS</Category></Include>
+    </Menu>
+
+    <Menu>
+      <Name>Satellite &amp; Imaging</Name>
+      <Directory>HamRadioSatImg.directory</Directory>
+      <Include><Category>HamRadioSatImg</Category></Include>
+    </Menu>
+
+    <Menu>
+      <Name>CW &amp; Morse</Name>
+      <Directory>HamRadioMorseCode.directory</Directory>
+      <Include><Category>HamRadioMorseCode</Category></Include>
+    </Menu>
+
+    <Menu>
+      <Name>Antennas &amp; Modeling</Name>
+      <Directory>HamRadioAntennaAnalyzer.directory</Directory>
+      <Include><Category>HamRadioAntennaAnalyzer</Category></Include>
+    </Menu>
+
+    <Menu>
+      <Name>Training &amp; Reference</Name>
+      <Directory>HamRadioTraining.directory</Directory>
+      <Include><Category>HamRadioTraining</Category></Include>
+    </Menu>
+
+    <Menu>
+      <Name>Other</Name>
+      <Directory>HamRadioOther.directory</Directory>
+      <OnlyUnallocated/>
+      <Include><Category>HamRadio</Category></Include>
+    </Menu>
+
+  </Menu> <!-- End Hamradio -->
 </Menu>

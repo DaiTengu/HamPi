@@ -34,6 +34,12 @@ on the Raspberry Pi 5 (aarch64). Developed with AI pair-programming assistance (
 - Renamed the project and GitHub repository to **HamPi64**.
 - Desktop/audio stack updated for Trixie: PipeWire, labwc/Wayland, Qt plugin path via
   `/etc/environment`, OSS `/dev/dsp` via osspd, Python 3.13 `audioop-lts` backport.
+- **Ham Radio menu reorganised** into 12 functional sub-groups (Weak Signal, Fldigi Suite,
+  Digital Modes, Digital Voice & DMR, SDR & Receivers, Rig Control & Programming,
+  Logging/DX/Contesting, APRS & Packet, Satellite & Imaging, CW & Morse, Antennas & Modeling,
+  Training & Reference). A new `hampi64-menu-categories.sh` (run last by the playbook)
+  re-tags each app's `.desktop` so it lands in the right sub-menu instead of scattering into
+  Internet/Accessories or piling into one flat list.
 
 ### Removed
 - The proprietary image-distribution EULA, the branded desktop `LICENSE.TXT` files, and the old

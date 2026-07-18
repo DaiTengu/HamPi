@@ -185,3 +185,15 @@
     copy:
       src: "{{ playbook_dir }}/../files/usr/share/desktop-directories/HamRadioWeakSignal.directory"
       dest: "/usr/share/desktop-directories/HamRadioWeakSignal.directory"
+
+  # HamPi64 sub-group directories (see hamradio.menu + hampi64-menu-categories.sh)
+  - name: Install remaining HamRadio sub-group directories
+    become: yes
+    copy:
+      src: "{{ playbook_dir }}/../files/usr/share/desktop-directories/{{ item }}"
+      dest: "/usr/share/desktop-directories/{{ item }}"
+    loop:
+      - HamRadioDigitalVoice.directory
+      - HamRadioRigControl.directory
+      - HamRadioSatImg.directory
+      - HamRadioOther.directory

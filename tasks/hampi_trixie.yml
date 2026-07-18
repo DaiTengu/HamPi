@@ -113,3 +113,6 @@
 - import_playbook: install_dmrlink.yml
 - import_playbook: install_ambeserver.yml
 - import_playbook: install_brandmeister-dmr-sea.yml
+
+# Runs last: every app's .desktop now exists, so group them into the Ham Radio sub-menus.
+- import_playbook: install_menu_categories.yml

@@ -1,0 +1,22 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Groups the Ham Radio menu. Runs LAST in the master playbook so every app's .desktop already
+# exists — it rewrites their Categories= so each lands in the right Ham Radio sub-menu instead
+# of being scattered across Internet/Accessories or piled into one flat list.
+
+- name: Organise the Ham Radio menu into sub-groups
+  hosts: hampi
+  become: yes
+  tags: menus
+  tasks:
+    - name: Install the menu categoriser
+      copy:
+        src: "{{ playbook_dir }}/../files/usr/local/bin/hampi64-menu-categories.sh"
+        dest: /usr/local/bin/hampi64-menu-categories.sh
+        mode: "0755"
+
+    - name: Assign ham apps to menu sub-groups
+      command: /usr/local/bin/hampi64-menu-categories.sh
+      changed_when: true
