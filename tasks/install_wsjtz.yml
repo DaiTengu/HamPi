@@ -9,17 +9,18 @@
 # installed under /opt/wsjtz so it coexists with WSJT-X Improved (/usr/bin/wsjtx); the
 # `wsjtz` launcher gives it its own config via --rig-name so the two don't clash.
 #
-# NOTE: built UNPATCHED from the pinned upstream release. WSJT-Z 2.0.17 had a transmit
-# regression when Split Operation = "Fake It" (rig keys but no audio/power out — upstream
-# issue sq9fve/wsjt-z#111). If you hit it, bump wsjtz_version to a release where upstream has
-# fixed it, or apply your own local patch. WSJT-X Improved is the recommended default.
+# NOTE: built UNPATCHED from the pinned upstream release (v2.0.18). This release FIXES the
+# transmit regression that affected 2.0.17 — with "Fake It" emulated split the rig keyed but
+# put out no audio/power, and Tune was dead (upstream sq9fve/wsjt-z#111); 2.0.18 reverts to
+# the 2.0.11 TX behavior. WSJT-X Improved (/usr/bin/wsjtx) is still the recommended default;
+# WSJT-Z is opt-in. If a future release regresses again, pin wsjtz_version to a known-good tag.
 #
 - name: Install WSJT-Z (opt-in source build)
   hosts: hampi
   become: yes
   tags: wsjtz
   vars:
-    wsjtz_version: "v2.0.17"
+    wsjtz_version: "v2.0.18"
   tasks:
     - name: WSJT-Z (only when explicitly enabled)
       when: install_wsjtz | default(false) | bool
@@ -91,4 +92,4 @@
               Exec=wsjtz
               Terminal=false
               Type=Application
-              Categories=HamRadio;
+              Categories=HamRadio;HamRadioWeakSignal;

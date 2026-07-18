@@ -23,7 +23,9 @@ on the Raspberry Pi 5 (aarch64). Developed with AI pair-programming assistance (
   on aarch64), hamfax (Qt5 fork; Debian dropped the Qt4 package).
 - New / updated flagships: WSJT-X Improved (DG2YCB), GridTracker 2, Pat (arm64 .deb), wfview (arm64
   AppImage), SDR++ (arm64 nightly), plus D-Rats, DXSpider, UHRR, and many more.
-- WSJT-Z as an opt-in build (`-e install_wsjtz=true`) with a local TX-audio patch (upstream #111).
+- WSJT-Z as an opt-in build (`-e install_wsjtz=true`), pinned to **v2.0.18** — upstream's own fix
+  for the #111 TX regression (with "Fake It" emulated split the rig keyed but put out no
+  audio/power), so no local patch is needed.
 
 ### Changed
 - Relicensed cleanly to **GPL-3.0-or-later**: added SPDX headers repo-wide; retained Dave Slotter
