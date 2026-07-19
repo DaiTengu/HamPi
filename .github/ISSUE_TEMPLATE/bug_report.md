@@ -3,7 +3,7 @@ name: Bug report
 about: Create a report to help us improve
 title: ''
 labels: bug
-assignees: dslotter
+assignees: DaiTengu
 
 ---
 
@@ -24,10 +24,9 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **System Info (please complete the following information):**
- - OS: HamPi or HamPC (please choose one)
- - HamPi or HamPC Version [e.g. 3.0.1]
- - For HamPi, Raspberry Pi Model [e.g. Raspberry Pi 1, 2, 3, 4B, Zero W, Zero W 2, 400]
- - For HamPC, PC Desktop or Laptop Model [e.g. Evolve III Maestro, Dell, HP, Lenovo, etc.]
+ - HamPi64 version or commit [e.g. release tag, or `git rev-parse HEAD`]
+ - Raspberry Pi model [e.g. Raspberry Pi 5 / 8GB]
+ - Raspberry Pi OS version [e.g. Trixie 64-bit (Debian 13)]
 
 **Additional context**
 Add any other context about the problem here.

@@ -1,116 +1,32 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# TR4W/TR-Linux (trlinux, N6TR) — contest logger. Original HamPi marked it BROKEN and went to
+# great lengths to install a specific FPC 3.2.2 via an expect script; Trixie already ships FPC
+# 3.2.2, so we build straight against the system compiler — no custom toolchain needed.
 #
-
-- name: Install N6TR's TR log
-  gather_facts: no
-  hosts: all
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install TR-Linux contest logger (removed as BROKEN in original HamPi)
+  hosts: hampi
+  become: yes
+  tags: trlog
   tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name: [git, fpc, make, build-essential, libhidapi-dev, libcurl4-openssl-dev, libieee1284-3-dev]
 
-  - name: Create directory hamradio
-    file:
-      path: /home/{{ ham_user }}/hamradio
-      state: directory
+    - name: Clone trlinux (N6TR)
+      git:
+        repo: https://github.com/trlinux/trlinux.git
+        dest: /usr/local/src/trlinux
+        depth: 1
 
-  - name: Install dependent libraries for trlog (Common)
-    become: yes
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - autotools-dev
-      - autoconf
-      - libtool
-      - expect
-      - libusb-1.0-0-dev
-      - libieee1284-3-dev
-      - libcurl4-openssl-dev
-      - libsndfile1-dev
-      - libasound-dev
-      - xterm 
-      - ncat
-      - texlive
-      - xpdf
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Download Free Pascal sources (Takes ~5 minutes)
-    unarchive:
-      src: https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.arm-linux-raspberry-2.tar
-      dest: /home/{{ ham_user }}/hamradio
-      remote_src: yes
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-    when: is_rpi|bool
-
-  - name: Copy Free pascal Expect Script
-    copy:
-      src: "{{ playbook_dir }}/../files/freepascal_install.exp"
-      dest: /home/{{ ham_user }}/hamradio/fpc-3.2.2.arm-linux/freepascal_install.exp
-      mode: 0655
-    when: is_rpi|bool
-
-  - name: Install Free Pascal using Expect Script
-    become: yes
-    command: ./freepascal_install.exp
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/fpc-3.2.2.arm-linux
-    when: is_rpi|bool
-
-  - name: Insert Free Pascal configuration
-    blockinfile:
-      dest: "/home/{{ ham_user }}/.fpc"
-      create: yes
-      block: |
-        #INCLUDE /etc/fpc.cfg
-        -Fl/usr/lib/gcc/arm-linux-gnueabihf/10
-    when: is_rpi|bool
-
-  - name: Download trlog sources
-    git:
-      repo: https://github.com/trlinux/trlinux.git
-      dest: /home/{{ ham_user }}/hamradio/trlinux
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Build trlog
-    command: make
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/trlinux
-
-  - name: Install trlog
-    become: yes
-    copy: remote_src=True src=/home/{{ ham_user }}/hamradio/trlinux/log/ dest=/usr/trlog/
-
-  - name: Create a symbolic link for {{ item }}
-    become: yes
-    file:
-      src: /usr/trlog/{{ item }}
-      dest: /usr/bin/{{ item }}
-      owner: root
-      group: root
-      state: link
-    with_items:
-      - trlog
-      - post
-
-  - name: Remove trlog build directory
-    file:
-      path: /home/{{ ham_user }}/hamradio/trlinux
-      state: absent
-
-  - name: Remove Free Pascal directory
-    file:
-      path: /home/{{ ham_user }}/hamradio/fpc-3.2.2.arm-linux
-      state: absent
+    - name: Build + install trlog (src/ target only — skips the doc/ pdflatex build)
+      shell: |
+        set -e
+        cd /usr/local/src/trlinux/src
+        make trlog
+        install -m 0755 trlog /usr/local/bin/trlog
+      args:
+        creates: /usr/local/bin/trlog

@@ -185,30 +185,17 @@ If the disclaimer of warranty and limitation of liability provided above cannot 
 END OF TERMS AND CONDITIONS
 
 
-ADDITIONAL TERMS AS PERMITTED BY SECTION 7. "Additional Terms."
+ADDITIONAL TERMS (per Section 7 of the GNU GPL, version 3)
 
-This software or derivatives of this software MUST attribute the original author, Dave Slotter, W3DJS and link to https://github.com/dslotter/hampi . Derivates of this software MUST NOT remove the original attribution. Including any source code from this software in your own software MUST attribute the original author, Dave Slotter, W3DJS and link to https://github.com/dslotter/hampi .
+As permitted by Section 7(b) of the GPL, this author-attribution requirement
+applies and must be preserved in redistributions and derivative works:
 
-You shall not alter, modify or remove the Author's Attributions from the source code or Nagware Notice, or create a new installer for the Software with these Attributions removed.
+    This software is derived from HamPi, created by Dave Slotter, W3DJS
+    (https://github.com/dslotter/HamPi). You must keep this attribution to
+    the original author intact.
 
-This software or derivatives of this software may not be sold. However, asking end users to send a QSL card, or postcard, or to donate to a charity not run by the people, or relatives of, or friends of the people promoting said charity is acceptable.
+HamPi64 is a fork maintained by Mike Miller, KD9QHQ
+(https://github.com/DaiTengu/HamPi64).
 
-IN NO EVENT WILL HAMPI / HAMPC / HAMIQ(tm) OR ITS SUPPLIERS BE LIABLE TO YOU FOR ANY DAMAGES, CLAIMS OR COSTS WHATSOEVER OR FOR ANY CONSEQUENTIAL, INDIRECT, INCIDENTAL DAMAGES, OR ANY LOST PROFITS OR LOST SAVINGS, EVEN IF AN HAMPI / HAMPC / HAMIQ(tm) REPRESENTATIVE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH LOSS, DAMAGES, CLAIMS OR COSTS OR FOR ANY CLAIM BY ANY THIRD PARTY. THE FOREGOING LIMITATIONS AND EXCLUSIONS APPLY TO THE EXTENT PERMITTED BY APPLICABLE LAW IN YOUR JURISDICTION. HAMPI / HAMPC / HAMIQ(tm)’S AGGREGATE LIABILITY AND THAT OF ITS SUPPLIERS UNDER OR IN CONNECTION WITH THIS AGREEMENT SHALL BE LIMITED TO THE AMOUNT PAID FOR THE SOFTWARE (WHICH IS $0), IF ANY. Nothing contained in this Agreement limits HamPi / HamPC / HamIQ(tm)’s liability to you in the event of death or personal injury resulting from HamPi / HamPC / HamIQ(tm)’s negligence or for the tort of deceit (fraud). HamPi / HamPC / HamIQ(tm) is acting on behalf of its suppliers for the purpose of disclaiming, excluding and/or limiting obligations, warranties and liability as provided in this Agreement, but in no other respects and for no other purpose. For further information, please see the jurisdiction-specific information at the end of this Agreement, if any, or contact HamPi / HamPC / HamIQ(tm)’s Support team.
-
-If you are in North America, this Agreement will be construed in accordance with the laws of the Gwinnett County, Georgia, USA, without regard to any conflict of laws rules, and for any suit, action or other proceeding arising from or relating to this Agreement or the Services, you agree irrevocably to the exclusive jurisdiction of the courts of Gwinnett County, Georgia, USA.
-
-If you are elsewhere in the world, this Agreement will be construed in accordance with the laws of the USA, without regard to any conflict of laws rules, and for any suit, action or other proceeding arising from or relating to this Agreement or the Services, you agree irrevocably to the exclusive jurisdiction of the USA courts.
-
-No waiver of either party of any breach or default of this Agreement will be deemed to be a waiver of any preceding or subsequent breach or default.
-
-If any provision of this Agreement is found to be unenforceable or invalid, that provision will be limited or eliminated to the extent necessary so that this Agreement will otherwise remain in full force and effect, and enforceable.
-
-Users are free to remove or disable any included Berkeley Open Infrastructure for Network Computing software, which is configured to only run when the system is powered on *and* idle. The BOINC client will run benign network computing tasks, such as science applications like protein folding, or searching for neutron stars. The author also believes that this rule isn't for "other people" but includes the author as well, and runs the BOINC software on his devices as well. If you don't consent to this, you may opt out only for your use by running the included boinctui tool to disable.
-
-There may be software executables and data files included in the image which are covered under proprietary licenses. In this case, the HamPi / HamPC / HamIQ(tm) author has received written permission to include those with the software image. However, the GPL does not apply to these software components and likewise the proprietary license does not apply to the parts covered by the GPL. Think of them as "oil and water". They do not mix at all or have any affect over each other.
-
-We assume no responsibility for errors or omissions in the software or documentation available from its web site. In no event shall we be liable to you or any third parties for any special, punitive, incidental, indirect or consequential damages of any kind, or any damages whatsoever, including, without limitation, those resulting from loss of use, data or profits, and on any theory of liability, arising out of or in connection with the use of this software.
-
-This Agreement and software image are protected by copyright and pending trademark. © HamPi / HamPC / HamIQ(tm), 2020-2023. All rights reserved.
-
-Last updated: February 17, 2023
+No further restrictions are imposed. All other terms are those of the GNU GPL
+version 3 above.

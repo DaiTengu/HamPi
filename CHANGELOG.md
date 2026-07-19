@@ -5,7 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased] — HamPi64 (64-bit Trixie / Raspberry Pi 5 fork)
+
+Fork of HamPi by **Mike Miller, KD9QHQ**, ported to 64-bit Raspberry Pi OS "Trixie" (Debian 13)
+on the Raspberry Pi 5 (aarch64). Developed with AI pair-programming assistance (see `CONTRIBUTORS.md`).
+
+### Added
+- 64-bit Trixie / Pi 5 port using a tiered install strategy: Trixie apt → upstream arm64 prebuilt
+  → source build (with GCC 14 / Qt / aarch64 patches).
+- **HamPi64 Extras** first-run installer — proprietary / patent-encumbered components (SDRplay API,
+  HamRS, DroidStar/AMBE) are no longer baked into the image; they are fetched on the user's own
+  device under each vendor's own license.
+- Apps the original HamPi had *removed as broken*, now building on aarch64: SDRangel, DroidStar,
+  TR-Log, OpenDV (DStarRepeater), CallRec, F4HTBPanadapter, SoapyAirspyHF, SoapyPlutoSDR,
+  SoapyVOLKConverters.
+- Recovered from the original's dropped set: FreeDV, twclock, leansdr/leandvb, lysdr, MSHV (built
+  on aarch64), hamfax (Qt5 fork; Debian dropped the Qt4 package).
+- New / updated flagships: WSJT-X Improved (DG2YCB), GridTracker 2, Pat (arm64 .deb), wfview (arm64
+  AppImage), SDR++ (arm64 nightly), plus D-Rats, DXSpider, UHRR, and many more.
+- WSJT-Z as an opt-in build (`-e install_wsjtz=true`) with a local TX-audio patch (upstream #111).
+
+### Changed
+- Relicensed cleanly to **GPL-3.0-or-later**: added SPDX headers repo-wide; retained Dave Slotter
+  (W3DJS) copyright and added Mike Miller (KD9QHQ) fork copyright.
+- Rewrote SECURITY / CONTRIBUTING / CODE_OF_CONDUCT for HamPi64 with GitHub-based reporting.
+- Renamed the project and GitHub repository to **HamPi64**.
+- Desktop/audio stack updated for Trixie: PipeWire, labwc/Wayland, Qt plugin path via
+  `/etc/environment`, OSS `/dev/dsp` via osspd, Python 3.13 `audioop-lts` backport.
+
+### Removed
+- The proprietary image-distribution EULA, the branded desktop `LICENSE.TXT` files, and the old
+  trademark / reserved-rights notices that were incompatible with the GPL.
+
+### Fixed
+- wfview loaded zero rig definitions on a clean image — now bakes the AppImage's bundled `*.rig`
+  into `/usr/share/wfview` so rig auto-detect (IC-7300, etc.) works.
+- Numerous GCC 14 / Qt5 / Qt6 / aarch64 build breakages across the source-built apps.
 
 ## [3.3 32-bit] - 2023-03-30
 - Updated copyright year to 2023

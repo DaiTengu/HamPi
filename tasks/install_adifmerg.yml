@@ -1,43 +1,41 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# adifmerg (oh7bf) — command-line ADIF log merge / convert / check tool (plus the qsorep
+# reporting script). Self-contained Perl; the repo's own ./install copies the scripts + man
+# pages system-wide. Built from a neutral /usr/local/src checkout so nothing lands in a user's
+# home (the image has no user until first boot).
 #
-
 - name: Install adifmerg Software
-  hosts: all
+  hosts: hampi
+  become: yes
   gather_facts: no
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
   tasks:
+    - name: Install dependent library (readline for qsorep)
+      package:
+        name: libterm-readline-gnu-perl
+        state: present
+      retries: 5
+      delay: 30
+      register: result
+      until: result.failed == false
 
-  - name: Install dependent library
-    become: yes
-    package:
-      name: libterm-readline-gnu-perl
-      state: present
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Git clone latest adifmerg sources
+      git:
+        repo: https://github.com/oh7bf/adifmerg.git
+        dest: /usr/local/src/adifmerg
+      retries: 5
+      delay: 30
+      register: result
+      until: result.failed == false
 
-  - name: Git clone latest adifmerg sources
-    git:
-      repo: https://github.com/oh7bf/adifmerg.git
-      dest: /home/{{ ham_user }}/hamradio/adifmerg
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Install adifmerg (its ./install copies scripts + man pages system-wide)
+      command: ./install
+      args:
+        chdir: /usr/local/src/adifmerg
 
-  - name: Install adifmerg
-    become: yes
-    command: ./install
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/adifmerg
-
-  - name: Remove adifmerg build directory
-    file:
-      path: /home/{{ ham_user }}/hamradio/adifmerg
-      state: absent
+    - name: Remove adifmerg build directory
+      file:
+        path: /usr/local/src/adifmerg
+        state: absent

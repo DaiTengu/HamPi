@@ -1,11 +1,31 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# callrec (BrandMeister) — DMR call recorder. Go program; the original marked it BROKEN. Builds
+# cleanly with Trixie's Go via `go install`, dropped into /usr/local/bin.
 #
-
-- name: Install callrec
-  hosts: all
-  gather_facts: no
+- name: Install callrec (removed as BROKEN in original HamPi)
+  hosts: hampi
+  become: yes
+  tags: callrec
   tasks:
+    - name: Install Go + git
+      apt:
+        state: present
+        name: [golang-go, git]
 
-  - name: Install callrec
-    command: /usr/go/bin/go install github.com/BrandMeister/callrec@latest
+    - name: Clone callrec (module path is bare "callrec", so build in-tree)
+      git:
+        repo: https://github.com/BrandMeister/callrec.git
+        dest: /usr/local/src/callrec
+        depth: 1
+
+    - name: Build + install callrec
+      shell: |
+        set -e
+        cd /usr/local/src/callrec
+        export GOPATH=/usr/local/src/go GOCACHE=/usr/local/src/go/.cache
+        go build -o /usr/local/bin/callrec .
+      args:
+        creates: /usr/local/bin/callrec

@@ -1,0 +1,28 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# SDR device drivers, firmware/udev, and general SDR tools (Trixie apt, arm64).
+# SoapySDR driver modules themselves come via soapysdr-module-all (core set).
+# SDRangel / SDR++ are not packaged for Trixie — deferred to source builds.
+#
+- name: Install SDR drivers and tools
+  hosts: hampi
+  become: yes
+  tags: sdr_drivers
+  tasks:
+    - name: apt-install SDR driver/tool packages
+      apt:
+        update_cache: yes
+        state: present
+        name:
+          - airspy               # Airspy R2/Mini tools + udev
+          - hackrf               # HackRF tools + udev + firmware
+          - limesuite            # LimeSDR tools/library + udev
+          - uhd-host             # Ettus UHD tools + firmware images
+          - gr-osmosdr           # GNU Radio osmosdr source/sink
+          - rtl-433              # 433/868 MHz ISM decoder (RTL-SDR)
+          - multimon-ng          # multi-protocol digital decoder
+          - inspectrum           # captured-signal analysis GUI
+          - cubicsdr             # cross-platform SDR receiver GUI
+          - gnss-sdr             # GNSS software-defined receiver

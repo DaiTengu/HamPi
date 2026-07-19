@@ -1,88 +1,33 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# MSHV (LZ2HV) — multi-mode weak-signal app (MSK144/FT8/JT65 etc.). Qt5 + gfortran. The .pro is
+# labelled _I686 but qmake retargets to aarch64; built from the SourceForge full-source zip.
 #
-
-- name: Install MSHV Software
-  hosts: all
-  gather_facts: no
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install MSHV (weak-signal)
+  hosts: hampi
+  become: yes
+  tags: mshv
   tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        # MSHV's .pro requires the Qt5 WebSockets module (libqt5websockets5-dev). Clean-build
+        # catch: the dev Pi only had it because WSJT-Z's deps had pulled it in.
+        name: [curl, unzip, build-essential, gfortran, qtbase5-dev, qtmultimedia5-dev, libqt5websockets5-dev, libfftw3-dev, libgomp1]
 
-  - name: Install dependent libraries for MSHV (Common)
-    become: yes
-    package:
-      name: libqt5websockets5-dev
-      state: present
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Download MSHV from Sourceforge
-    unarchive:
-      src: "https://downloads.sourceforge.net/project/mshv/MSHV_273_Full_Source_Code.zip?use_mirror=versaweb&r=https://sourceforge.net/projects/mshv/files/MSHV_273_Full_Source_Code.zip/download"
-      dest: /home/{{ ham_user }}/hamradio/
-      remote_src: yes
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: QMake MSHV
-    command: qmake MSHV_I686.pro
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/MSHV_273
-
-  - name: Clean MSHV
-    command: make clean
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/MSHV_273
-
-  - name: Build MSHV
-    command: make
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/MSHV_273
-
-  - name: Install MSHV artifacts
-    become: yes
-    copy:
-      src: /home/{{ ham_user }}/hamradio/MSHV_273/bin/{{ item }}
-      dest: /usr/MSHV
-      owner: root
-      group: root
-      mode: 0755
-      remote_src: yes
-    with_items:
-      - AllTxtMonthly
-      - ExportLog
-      - log
-      - RxWavs
-      - Screenshots
-      - settings
-      - MSHV_I686
-
-  - name: Create mshv.desktop
-    become: yes
-    template:
-      src: "{{ playbook_dir }}/../files/usr/share/applications/MSHV.desktop"
-      dest: /usr/share/applications/MSHV.desktop
-      owner: root
-      group: root
-      mode: 0644
-
-  - name: Install MSHV icon
-    become: yes
-    copy:
-      src: /home/{{ ham_user }}/hamradio/MSHV_273/src/pic/ms_ico.png
-      dest: /usr/share/pixmaps/MSHV.png
-      mode: 0644
-      remote_src: yes
-
-  - name: Remove MSHV build directory
-    file:
-      path: /home/{{ ham_user }}/hamradio/MSHV_256
-      state: absent
+    - name: Download, build + install MSHV
+      shell: |
+        set -e
+        mkdir -p /usr/local/src/mshv && cd /usr/local/src/mshv
+        curl -fsSL -o mshv.zip "https://sourceforge.net/projects/mshv/files/MSHV_2766_Full_Source_Code.zip/download"
+        unzip -oq mshv.zip
+        cd "$(find . -maxdepth 1 -type d -iname 'MSHV*' | head -1)"
+        pro=$(ls *.pro 2>/dev/null | grep -viE 'win|mac' | head -1)
+        qmake "$pro"
+        make -j"$(nproc)"
+        bin=$(find . -maxdepth 2 -type f -executable -iname 'mshv*' | head -1)
+        install -m 0755 "$bin" /usr/local/bin/mshv
+      args:
+        creates: /usr/local/bin/mshv

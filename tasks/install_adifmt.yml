@@ -1,11 +1,28 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# adifmt (ADIF Multitool, flwyd) — CLI for filtering/converting ADIF logs. Go program; built
+# with Trixie's golang toolchain via `go install`, binary dropped into /usr/local/bin.
 #
-
-- name: Install ADIF Multitool
-  hosts: all
-  gather_facts: no
+- name: Install adifmt (ADIF Multitool)
+  hosts: hampi
+  become: yes
+  tags: adifmt
   tasks:
+    - name: Install Go toolchain
+      apt:
+        state: present
+        name:
+          - golang-go
+          - git
 
-  - name: Install ADIF Multitool
-    command: /usr/go/bin/go install github.com/flwyd/adif-multitool/adifmt@latest
+    - name: Build + install adifmt via go install
+      shell: |
+        set -e
+        export GOBIN=/usr/local/bin
+        export GOPATH=/usr/local/src/go
+        export GOCACHE=/usr/local/src/go/.cache
+        go install github.com/flwyd/adif-multitool/adifmt@latest
+      args:
+        creates: /usr/local/bin/adifmt

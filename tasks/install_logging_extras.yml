@@ -1,0 +1,20 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Additional logging apps (Trixie apt, arm64), on top of the core
+# CQRlog / KLog / xlog installed in Milestone 1.
+#
+- name: Install additional logging apps
+  hosts: hampi
+  become: yes
+  tags: logging_extras
+  tasks:
+    - name: apt-install extra logging apps
+      apt:
+        update_cache: yes
+        state: present
+        name:
+          - tlf           # console contest logger
+          - tucnak        # VHF/UHF/SHF contest logger
+          - pyqso         # Python/GTK logbook (packaged in Trixie)

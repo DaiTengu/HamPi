@@ -1,0 +1,26 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Morse / CW training and decoding tools (Trixie apt, arm64).
+#
+- name: Install Morse / CW tools
+  hosts: hampi
+  become: yes
+  tags: morse
+  tasks:
+    - name: apt-install morse/CW apps
+      apt:
+        update_cache: yes
+        state: present
+        name:
+          - cw            # CLI morse sender (unixcw)
+          - cwcp          # ncurses morse trainer
+          - xcwcp         # GUI morse trainer
+          - cwdaemon      # morse daemon (serial/parallel keying)
+          - aldo          # morse training program
+          - qrq           # high-speed morse trainer
+          - ebook2cw      # convert ebooks to morse audio (MP3/OGG)
+          - ebook2cwgui   # GUI for ebook2cw
+          - morse2ascii   # decode morse from a PCM WAV
+          - xdemorse      # decode morse signals to text

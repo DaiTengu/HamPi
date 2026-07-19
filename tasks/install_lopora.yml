@@ -1,69 +1,75 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# Lopora (PA2OHH) — QRSS / very-slow-CW beacon reception + keyer (Python 3 / Tkinter). It reads
+# AND writes its config/fonts/maps in its own folder, so each user needs a private writable copy.
+# We ship the template in /etc/skel/lopora (copied into every new user's home when their account
+# is created at first boot), and the launcher self-heals an existing user's ~/lopora from that
+# template — so it works on a fresh username-agnostic image and on an already-provisioned Pi.
+# Trixie/Pi 5 changes from the original: python3-pillow -> python3-pil, dropped pulseaudio
+# (PipeWire), points at the current v5g script, launcher + desktop entry instead of LXDE scripts.
 #
-
 - name: Install Lopora by PA2OHH
-  hosts: all
+  hosts: hampi
+  become: yes
   gather_facts: no
   tasks:
+    - name: Install dependent libraries for Lopora
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - python3
+        - python3-numpy
+        - python3-pil
+        - python3-pil.imagetk
+        - python3-pyaudio
+        - pavucontrol
+        - unzip
+      retries: 5
+      delay: 30
+      register: result
+      until: result.failed == false
 
-  - name: Install dependent libraries for Lopora
-    become: yes
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - python3
-      - python3-numpy
-      - python3-pillow
-      - python3-pil.imagetk
-      - python3-pyaudio
-      - pulseaudio
-      - pavucontrol
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Create the Lopora template dir in /etc/skel
+      file:
+        path: /etc/skel/lopora
+        state: directory
+        mode: "0755"
 
-  - name: Create directory /home/{{ ham_user }}/lopora
-    file:
-      path: /home/{{ ham_user }}/lopora
-      state: directory
+    - name: Download + unarchive Lopora into the skel template
+      unarchive:
+        src: https://www.qsl.net/pa2ohh/11lopsource.zip
+        dest: /etc/skel/lopora
+        remote_src: yes
+        creates: /etc/skel/lopora/LOPORA-v5g.py
+      retries: 5
+      delay: 30
+      register: result
+      until: result.failed == false
 
-#
-# Download and install LOPORA
-#
+    - name: Install lopora launcher (self-heals ~/lopora from the skel template)
+      copy:
+        dest: /usr/local/bin/lopora
+        mode: "0755"
+        content: |
+          #!/bin/sh
+          # Lopora reads/writes its fonts/config/maps in its own folder, so give each user a
+          # private writable copy. New users get ~/lopora from /etc/skel automatically; existing
+          # users (or the dev Pi) are seeded from the template here on first run.
+          [ -d "$HOME/lopora" ] || cp -r /etc/skel/lopora "$HOME/lopora"
+          cd "$HOME/lopora" && exec python3 LOPORA-v5g.py "$@"
 
-  - name: Download and Unarchive Lopora QRSS beacon reception program
-    unarchive:
-      src: https://www.qsl.net/pa2ohh/11lopsource.zip
-      dest: /home/{{ ham_user }}/lopora
-      remote_src: yes
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Set quickstart script to executable
-    file: dest=/home/{{ ham_user }}/lopora/scriptfiles/quickstartlopora.sh mode=a+x
-
-  - name: Create quickstartlopora-pi.sh
-    copy:
-      dest: /home/{{ ham_user }}/lopora/scriptfiles/quickstartlopora-pi.sh
-      mode: 0755
-      content: |
-        #!/bin/sh
-
-        # Start Lopora
-        cd /home/{{ ham_user }}/lopora
-        lxterminal -l -e 'python3 LOPORA-v5e.py ; /bin/sh' &
-        lxterminal -l -e 'python3 LOPEXTftp-v1a.py ; /bin/sh' &
-
-  - name: Copy Lopora desktop file
-    become: yes
-    template:
-      src: "{{ playbook_dir }}/../templates/usr/local/share/applications/lopora.desktop.j2"
-      dest: "/usr/local/share/applications/lopora.desktop"
-      owner: root
-      group: root
-      mode: 0644
+    - name: Lopora desktop entry
+      copy:
+        dest: /usr/share/applications/lopora.desktop
+        mode: "0644"
+        content: |
+          [Desktop Entry]
+          Name=Lopora
+          Comment=QRSS / slow-CW beacon reception and keyer (PA2OHH)
+          Exec=lopora
+          Terminal=true
+          Type=Application
+          Categories=HamRadio;

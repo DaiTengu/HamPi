@@ -1,66 +1,35 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# SoapyAirspyHF (pothosware) — SoapySDR driver module for Airspy HF+ / Discovery. Original
+# removed it as "Build broken under Bookworm"; builds clean from source on Trixie/aarch64.
 #
-
-- name: Install SoapyAirSpyHF
-  hosts: all
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install SoapyAirspyHF module (removed as too-hard in original HamPi)
+  hosts: hampi
+  become: yes
+  tags: soapy_airspyhf
   tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name: [git, cmake, g++, pkg-config, libsoapysdr-dev, libairspyhf-dev]
 
-  - name: Create directory hamradio
-    file:
-      path: /home/{{ ham_user }}/hamradio
-      state: directory
+    - name: Clone SoapyAirspyHF
+      git:
+        repo: https://github.com/pothosware/SoapyAirspyHF.git
+        dest: /usr/local/src/SoapyAirspyHF
+        depth: 1
 
-  - name: Install dependent libraries
-    become: yes
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - gr-osmosdr
-      - libfftw3-dev
-      - libusb-1.0-0-dev
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Download latest SoapyAirSpy HF sources
-    git:
-      repo: https://github.com/pothosware/SoapyAirSpyHF.git
-      dest: /home/{{ ham_user }}/hamradio/SoapyAirSpyHF
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Create directory SoapyAirSpyHF/build
-    file:
-      path: /home/{{ ham_user }}/hamradio/SoapyAirSpyHF/build
-      state: directory
-
-  - name: Build SoapyAirSpy HF CMakeFiles
-    command: cmake --install-prefix=/usr ..
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/SoapyAirSpyHF/build
-
-  - name: Build SoapyAirSpy HF
-    command: make
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/SoapyAirSpyHF/build
-
-  - name: Install SoapyAirSpy HF
-    become: yes
-    command: make install
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/SoapyAirSpyHF/build
-
-  - name: Remove SoapyAirSpy HF build directory
-    file:
-      path: /home/{{ ham_user }}/hamradio/SoapyAirSpyHF
-      state: absent
+    - name: Build + install SoapyAirspyHF
+      shell: |
+        set -e
+        cd /usr/local/src/SoapyAirspyHF
+        rm -rf build && mkdir build && cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        make -j"$(nproc)"
+        make install
+        ldconfig
+        touch /usr/local/src/SoapyAirspyHF/.hampi-built
+      args:
+        creates: /usr/local/src/SoapyAirspyHF/.hampi-built

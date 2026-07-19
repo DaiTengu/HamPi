@@ -1,31 +1,37 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# DMRlink + HBlink3 (HBLink-org) — Python DMR IPSC / HBP network software. Pure Python; cloned
+# to /opt with its deps in a venv. Operator configures/runs it (network + hotspot dependent).
 #
-
-- name: Install DMR Link
-  hosts: all
-  gather_facts: no
+- name: Install DMRlink / HBlink3
+  hosts: hampi
+  become: yes
+  tags: dmrlink
   tasks:
+    - name: Install prerequisites
+      apt:
+        state: present
+        name: [git, python3, python3-venv]
 
-  - name: Create directory hamradio
-    file:
-      path: /home/{{ ham_user }}/hamradio
-      state: directory
+    - name: Clone DMRlink
+      git:
+        repo: https://github.com/HBLink-org/DMRlink.git
+        dest: /opt/DMRlink
+        depth: 1
 
-  - name: Git clone latest DMR Link sources
-    git:
-      repo: https://github.com/HBLink-org/DMRlink
-      dest: /home/{{ ham_user }}/hamradio/DMRlink
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Clone hblink3
+      git:
+        repo: https://github.com/HBLink-org/hblink3.git
+        dest: /opt/hblink3
+        depth: 1
 
-  - name: Git clone latest hblink3 sources
-    git:
-      repo: https://github.com/HBLink-org/hblink3.git
-      dest: /home/{{ ham_user }}/hamradio/hblink3
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Create venv + install hblink3 requirements
+      shell: |
+        set -e
+        python3 -m venv /opt/hblink3-venv
+        /opt/hblink3-venv/bin/pip install --quiet -r /opt/hblink3/requirements.txt
+        touch /opt/hblink3-venv/.hampi-built
+      args:
+        creates: /opt/hblink3-venv/.hampi-built

@@ -1,0 +1,21 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Additional apps that a final coverage pass found available straight from Trixie apt
+# (arm64) — the last easy wins from the original HamPi set.
+#
+- name: Install additional apt apps (final coverage pass)
+  hosts: hampi
+  become: yes
+  tags: apt_extras
+  tasks:
+    - name: Install extra apt apps
+      apt:
+        state: present
+        name:
+          - airspyhf          # Airspy HF+ / Discovery SDR driver + tools
+          - quisk             # SDR transceiver / panadapter application
+          - linpac            # AX.25 packet-radio terminal (mailbox client)
+          - flwrap            # FLDigi file-wrap/transfer utility (completes the FL suite)
+          - cwdaemon          # Morse (CW) keying daemon used by loggers/contest tools

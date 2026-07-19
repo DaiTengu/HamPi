@@ -1,0 +1,115 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# HamPi Trixie / Pi 5 — Milestone 1 master playbook.
+# Run from a controller: ansible-playbook -i inventory/hampi.ini tasks/hampi_trixie.yml
+# (or use the ./run_trixie wrapper).
+#
+- import_playbook: ../library/set_facts.yml
+
+#
+# Base configuration + full system upgrade
+#
+- import_playbook: configuration_tasks.yml
+- import_playbook: upgrade_debian_packages.yml
+
+#
+# Desktop integration + branding
+#
+- import_playbook: install_menus.yml
+- import_playbook: install_wallpaper.yml
+- import_playbook: install_about.yml
+- import_playbook: install_nonfree_installer.yml   # ships the "HamPi64 Extras" launcher (does NOT install the non-free apps)
+
+- import_playbook: core_apt_apps.yml
+- import_playbook: install_wsjtx.yml
+- import_playbook: install_wsjtz.yml     # opt-in, off by default (install_wsjtz flag)
+- import_playbook: install_gridtracker.yml
+- import_playbook: install_pat.yml
+
+#
+# Milestone 2 — SDR drivers/tools, antenna modeling, SDRplay RSP
+#
+- import_playbook: install_sdr_drivers.yml
+- import_playbook: install_antenna_modeling.yml
+- import_playbook: install_sdrplay.yml
+
+#
+# DMR programming tools
+#
+- import_playbook: install_dmr_apps.yml
+
+#
+# Morse/CW + additional logging
+#
+- import_playbook: install_morse.yml
+- import_playbook: install_logging_extras.yml
+
+#
+# Weather / satellite imaging
+#
+- import_playbook: install_weather.yml
+
+#
+# APRS extras, exam/training, misc utilities
+#
+- import_playbook: install_aprs_extras.yml
+- import_playbook: install_exam.yml
+- import_playbook: install_misc.yml
+- import_playbook: install_more_apt_apps.yml
+- import_playbook: install_apt_extras.yml
+- import_playbook: install_recovered_apt.yml
+
+#
+# Bucket C — upstream prebuilts / source builds
+#
+- import_playbook: install_wfview.yml
+- import_playbook: install_sdrpp.yml
+- import_playbook: install_fldigi_suite.yml
+- import_playbook: install_linpsk.yml
+- import_playbook: install_pihpsdr.yml
+- import_playbook: install_readsb.yml
+- import_playbook: install_glfer.yml
+- import_playbook: install_adifmerg.yml
+- import_playbook: install_lopora.yml
+- import_playbook: install_acarsdec.yml
+- import_playbook: install_leansdr.yml
+- import_playbook: install_rscw.yml
+- import_playbook: install_hamrs.yml
+- import_playbook: install_adifmt.yml
+- import_playbook: install_flaa.yml
+- import_playbook: install_predict.yml
+- import_playbook: install_flmoxgen.yml
+- import_playbook: install_f4htbpna.yml
+- import_playbook: install_skcclogger.yml
+- import_playbook: install_ladyheather.yml
+- import_playbook: install_soapy_volkconverters.yml
+- import_playbook: install_tentenqsologger.yml
+- import_playbook: install_cqrprop.yml
+- import_playbook: install_d-rats.yml
+- import_playbook: install_uhrr.yml
+- import_playbook: install_xwefax.yml
+- import_playbook: install_hamfax.yml
+- import_playbook: install_qrsspig.yml
+- import_playbook: install_aa-analyzer.yml
+- import_playbook: install_dxspider.yml
+- import_playbook: install_wordsworth.yml
+- import_playbook: install_lysdr.yml
+- import_playbook: install_mshv.yml
+- import_playbook: install_soapy_airspyhf.yml
+- import_playbook: install_soapy_plutosdr.yml
+- import_playbook: install_reverse_beacon_network_client.yml
+- import_playbook: install_js8callutilities.yml
+- import_playbook: install_golang.yml
+- import_playbook: install_pybombs.yml
+- import_playbook: install_callrec.yml
+- import_playbook: install_buildlibs.yml
+- import_playbook: install_sdrangel.yml
+- import_playbook: install_droidstar.yml
+- import_playbook: install_dmrhost.yml
+- import_playbook: install_opendv.yml
+- import_playbook: install_trlog.yml
+- import_playbook: install_dmrlink.yml
+- import_playbook: install_ambeserver.yml
+- import_playbook: install_brandmeister-dmr-sea.yml

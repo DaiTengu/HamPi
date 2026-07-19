@@ -1,0 +1,50 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# FLDigi-suite completion (flcluster, fllog, flnet, flwkey) — w1hkj autotools
+# source builds (not in apt). Source tarballs from w1hkj.org (w1hkj.com is dead).
+# fldigi/flmsg/flamp/flrig are already installed via apt (core set); flxmlrpc is apt.
+#
+- name: Install FLDigi-suite completion
+  hosts: hampi
+  become: yes
+  tags: fldigi_suite
+  vars:
+    fldigi_suite_tools:
+      - { name: flcluster, ver: "1.1.01" }
+      - { name: fllog,     ver: "1.2.9" }
+      - { name: flnet,     ver: "7.5.0" }
+      - { name: flwkey,    ver: "1.2.4" }
+  tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name:
+          - build-essential
+          - pkg-config
+          - libfltk1.3-dev
+          - libflxmlrpc-dev
+          - libpng-dev
+          - libxft-dev
+
+    - name: Download + extract each FLDigi-suite tool
+      unarchive:
+        src: "https://www.w1hkj.org/files/{{ item.name }}/{{ item.name }}-{{ item.ver }}.tar.gz"
+        dest: /usr/local/src/
+        remote_src: yes
+        creates: "/usr/local/src/{{ item.name }}-{{ item.ver }}"
+      loop: "{{ fldigi_suite_tools }}"
+      retries: 3
+      delay: 10
+
+    - name: Build + install each tool
+      shell: |
+        set -e
+        cd /usr/local/src/{{ item.name }}-{{ item.ver }}
+        ./configure --prefix=/usr/local
+        make -j"$(nproc)"
+        make install
+      args:
+        creates: "/usr/local/bin/{{ item.name }}"
+      loop: "{{ fldigi_suite_tools }}"

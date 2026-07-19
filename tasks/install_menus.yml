@@ -1,10 +1,12 @@
-#
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
-#
+# HamPi64 — a 64-bit fork of HamPi for Raspberry Pi OS Trixie / Pi 5 (github.com/DaiTengu/HamPi64).
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS   (original HamPi)
+# Copyright (C) 2026 Mike Miller, KD9QHQ        (HamPi64 fork)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Ham Radio Menu Tasks
-  hosts: all
+  hosts: hampi
   gather_facts: no
+  tags: menus
   tasks:
 
   # In recent versions of Debian, extra-xdg-menus

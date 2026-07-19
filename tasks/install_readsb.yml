@@ -1,0 +1,41 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# readsb — modern ADS-B decoder (wiedehopf fork), replacing the dead armhf dump1090.
+# Builds the readsb + viewadsb binaries; no receiver service is auto-enabled
+# (opt-in — the user configures/enables a feed if they want one).
+#
+- name: Install readsb (ADS-B)
+  hosts: hampi
+  become: yes
+  tags: readsb
+  tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name:
+          - git
+          - build-essential
+          - pkg-config
+          - libusb-1.0-0-dev
+          - librtlsdr-dev
+          - libncurses-dev
+          - zlib1g-dev
+          - libzstd-dev
+
+    - name: Clone readsb (wiedehopf)
+      git:
+        repo: https://github.com/wiedehopf/readsb.git
+        dest: /usr/local/src/readsb
+        depth: 1
+
+    - name: Build + install readsb + viewadsb
+      shell: |
+        set -e
+        cd /usr/local/src/readsb
+        make -j"$(nproc)" RTLSDR=yes
+        install -m 0755 readsb /usr/bin/readsb
+        install -m 0755 viewadsb /usr/bin/viewadsb
+      args:
+        creates: /usr/bin/readsb

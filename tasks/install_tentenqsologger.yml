@@ -1,56 +1,60 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# 10-10 QSO Logger (N7YG) — Java logger for the 10-10 International net. Arch-independent JAR
+# run under Trixie's default-jre; ships a bundled native SQLite driver that works on arm64.
 #
-
-- name: Install Ten Ten QSO Logger
-  hosts: all
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install Ten-Ten QSO Logger
+  hosts: hampi
+  become: yes
+  tags: tentenqsologger
   tasks:
+    - name: Install prerequisites
+      apt:
+        state: present
+        name: [default-jre, unzip]
 
-  - name: Install Ten Ten QSO Logger pre-requisites
-    become: yes
-    package:
-      name: default-jre
-      state: present
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Create /opt/1010qsologger
+      file:
+        path: /opt/1010qsologger
+        state: directory
+        mode: "0755"
 
-  - name: Create directory /usr/1010qsologger
-    become: yes
-    file:
-      path: /usr/1010qsologger
-      state: directory
+    - name: Unpack 10qsolog into /opt/1010qsologger
+      unarchive:
+        src: "https://n7yg.net/files/10qsolog.zip"
+        dest: /opt/1010qsologger
+        remote_src: yes
+        creates: /opt/1010qsologger/10qsolog.sh
+      register: dl
+      retries: 3
+      delay: 10
+      until: dl is succeeded
 
-  - name: Download and Unarchive Ten Ten QSO Logger
-    become: yes
-    unarchive:
-      src: "https://n7yg.net/files/10qsolog.zip"
-      dest: /usr/1010qsologger
-      remote_src: yes
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Drop Windows cruft, make launcher executable
+      shell: |
+        cd /opt/1010qsologger
+        rm -f 10QSOLogger.exe 10qsolog.bat
+        chmod +x 10qsolog.sh
 
-  - name: Remove Ten Ten QSO Logger cruft
-    become: yes
-    shell: rm 10QSOLogger.exe 10qsolog.bat
-    args:
-      chdir: /usr/1010qsologger
-      warn: no
+    - name: System launcher
+      copy:
+        dest: /usr/local/bin/tentenqsologger
+        mode: "0755"
+        content: |
+          #!/bin/sh
+          cd /opt/1010qsologger && exec ./10qsolog.sh "$@"
 
-  - name: Change /usr/1010qsologger/10qsolog.sh to Executable
-    become: yes
-    file: dest=/usr/1010qsologger/10qsolog.sh mode=a+x
-
-  - name: Copy Ten Ten QSO Logger desktop file
-    become: yes
-    copy:
-      src: "{{ playbook_dir }}/../files/usr/share/applications/tentenlogger.desktop"
-      dest: "/usr/share/applications/tentenlogger.desktop"
+    - name: Desktop entry
+      copy:
+        dest: /usr/share/applications/tentenqsologger.desktop
+        mode: "0644"
+        content: |
+          [Desktop Entry]
+          Name=Ten-Ten QSO Logger
+          Comment=10-10 International net logger
+          Exec=tentenqsologger
+          Terminal=false
+          Type=Application
+          Categories=HamRadio;

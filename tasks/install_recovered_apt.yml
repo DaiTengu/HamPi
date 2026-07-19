@@ -1,0 +1,20 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Apps the ORIGINAL HamPi removed as unbuildable ("Build broken under Bookworm" / "Website
+# gone") that Trixie now packages for arm64 — recovered as plain apt installs:
+#   freedv   — FreeDV digital-voice (was "Build broken under Bookworm")
+#   twclock  — ham clock + CW keyer timing (was "Website gone")
+#
+- name: Install recovered apt apps (removed in original HamPi)
+  hosts: hampi
+  become: yes
+  tags: recovered_apt
+  tasks:
+    - name: Install recovered apps from Trixie apt
+      apt:
+        state: present
+        name:
+          - freedv
+          - twclock

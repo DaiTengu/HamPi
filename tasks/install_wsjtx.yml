@@ -1,76 +1,28 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# WSJT-X Improved (DG2YCB) — official arm64 .deb, replaces mainline WSJT-X.
+# Version pinned via group_vars (wsjtx_improved_*).
 #
-
-- name: Install WSJT-X
-  hosts: all
+- name: Install WSJT-X Improved
+  hosts: hampi
+  become: yes
+  tags: wsjtx
   tasks:
+    - name: Download WSJT-X Improved .deb
+      when: install_wsjtx_improved | default(true) | bool
+      get_url:
+        url: "https://sourceforge.net/projects/wsjt-x-improved/files/WSJT-X_v{{ wsjtx_improved_version }}/Raspberry%20Pi/wsjtx-{{ wsjtx_improved_version }}_improved_{{ wsjtx_improved_variant }}_{{ wsjtx_improved_build }}_Rpi_{{ wsjtx_improved_os }}_arm64.deb/download"
+        dest: "/tmp/wsjtx-improved.deb"
+        mode: "0644"
+      retries: 3
+      delay: 10
+      register: dl
+      until: dl is succeeded
 
-  - name: Create directory hamradio
-    file:
-      path: /home/{{ ham_user }}/hamradio/
-      state: directory
-
-# Website is down
-#  - name: Create directory for documentation
-#    become: yes
-#    file:
-#      path: /usr/share/doc/wsjt-x
-#      state: directory
-#
-#  - name: Download WSJT-X {{ wsjtx_version }} Documentation
-#    become: yes
-#    get_url:
-#      url: https://physics.princeton.edu/pulsar/K1JT/wsjtx-doc/wsjtx-main-{{ wsjtx_version }}_en%20%28USLetter%29.pdf
-#      dest: /usr/share/doc/wsjt-x/wsjtx-main-{{ wsjtx_version }}_en%20%28USLetter%29.pdf
-#      validate_certs: no
-#    retries: 5
-#    delay: 30
-#    register: result
-#    until: result.failed == false
-
-#
-# Common
-#
-  - name: Download update_wsjtx_from_src executable by W3DJS
-    get_url:
-      url: https://raw.githubusercontent.com/dslotter/ham_radio_scripts/main/update_wsjtx_from_src
-      dest: /home/{{ ham_user }}/bin/update_wsjtx_from_src
-      mode: a+x
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Run update_wsjtx_from_src
-    command: /usr/bin/bash -c './update_wsjtx_from_src'
-    args:
-      chdir: /home/{{ ham_user }}/bin/
-
-#  - name: Modify categories for message_aggregator.desktop
-#    become: yes
-#    lineinfile:
-#      path: /usr/local/share/applications/message_aggregator.desktop
-#      regexp: '^Categories=.*'
-#      line: Categories=HamRadio Weak Signal
-#
-#  - name: Modify categories for wsjtx.desktop
-#    become: yes
-#    lineinfile:
-#      path: /usr/local/share/applications/wsjtx.desktop
-#      regexp: '^Categories=.*'
-#      line: Categories=HamRadio Weak Signal
-
-#
-# Raspbian ARM
-#
-
-  - name: Work around WSJT-X behavior - configure locales
-    become: yes
-    command: sed -i "s/# en_US.UTF-8/en_US.UTF-8/g" /etc/locale.gen
-    when: is_arm|bool and is_debian|bool and is_rpi|bool
-
-  - name: Work around WSJT-X behavior - run local-gen
-    become: yes
-    command: locale-gen
-    when: is_arm|bool and is_debian|bool and is_rpi|bool
+    - name: Install WSJT-X Improved (apt resolves deps; force-overwrite shares an icon with wsjtx-data, kept for jtdx/js8call)
+      when: install_wsjtx_improved | default(true) | bool
+      apt:
+        deb: "/tmp/wsjtx-improved.deb"
+        dpkg_options: force-confdef,force-confold,force-overwrite

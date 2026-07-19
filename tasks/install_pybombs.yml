@@ -1,29 +1,25 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# PyBOMBS (GNU Radio) — build/package manager for GNU Radio out-of-tree modules. Pure Python;
+# installed system-wide from upstream git via pip.
 #
-
-- name: Install PyBOMBS (Used by GnuRadio)
-  hosts: all
+- name: Install PyBOMBS
+  hosts: hampi
+  become: yes
+  tags: pybombs
   tasks:
+    - name: Install prerequisites
+      apt:
+        state: present
+        name: [git, python3-pip]
 
-  # Use this for Python3
-  - name: Install dependent libraries
-    become: yes
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - python3
-      - python3-pip
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Install Python module - PyBOMBS
-    become: yes
-    command: pip3 install --upgrade --break-system-packages git+https://github.com/gnuradio/pybombs.git
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Install PyBOMBS from git (system-wide)
+      pip:
+        name: git+https://github.com/gnuradio/pybombs.git
+        extra_args: --break-system-packages
+      register: pb
+      retries: 2
+      delay: 10
+      until: pb is succeeded

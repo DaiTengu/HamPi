@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=HamPi64 Extras (non-free)
+Comment=Download and install proprietary / patent-encumbered components under their own vendor licenses
+Exec=hampi64-extras
+Icon=rpi
+Terminal=true
+Type=Application
+Categories=HamRadio;System;
+StartupNotify=true

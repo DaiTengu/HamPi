@@ -1,78 +1,23 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# AMBEserver (NW Digital Radio) — exposes a DV3000/ThumbDV AMBE dongle over TCP. The install
+# tree is laid down at /opt; the operator runs the bundled installer once a DV3000 is attached
+# (it needs the hardware to do anything).
 #
-
-- name: Install NW Digital's version of AMBEServer
-  hosts: all
-  gather_facts: no
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install AMBEserver (NW Digital Radio)
+  hosts: hampi
+  become: yes
+  tags: ambeserver
   tasks:
+    - name: Ensure git present
+      apt:
+        name: git
+        state: present
 
-  - name: Create directory /usr/local/sbin
-    become: yes
-    file:
-      path: /usr/local/sbin
-      state: directory
-
-  - name: Create the user 'opendv' and add to group of 'dialout'
-    become: yes
-    user:
-      name: opendv
-      groups: dialout
-      append: yes
-      comment: AMBEServer
-      create_home: no
-      shell: /usr/sbin/nologin
-
-
-#
-# Build and install NW Radio AMBEServer
-#
-
-  - name: Git clone latest NW Radio AMBEServer sources
-    git:
-      repo: https://github.com/nwdigitalradio/ambeserver-install.git
-      dest: /home/{{ ham_user }}/hamradio/ambeserver-install
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Set install script to executable
-    file: dest=/home/{{ ham_user }}/hamradio/ambeserver-install/install.sh mode=a+x
-
-  - name: Install AMBEServer package
-    become: yes
-    command: ./install.sh
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/ambeserver-install
-    ignore_errors: yes
-    # Installation returns error if ThumbDV isn't present and service cannot start
-
-  - name: Stop ambeserver@ThumbDV service to replace with optimized version
-    become: yes
-    command: systemctl stop ambeserver@ThumbDV
-
-  - name: Build optimized version of AMBEServer
-    command: gcc -O2 -march=native -mtune=native -o AMBEserver AMBEserver.c
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/ambeserver-install/usr/local/src/AMBEserver
-
-  - name: Install optimized AMBEServer executable
-    become: yes
-    command: cp /home/{{ ham_user }}/hamradio/ambeserver-install/usr/local/src/AMBEserver/AMBEserver /usr/local/sbin
-
-  - name: Remove AMBEServer build directory
-    file:
-      path: /home/{{ ham_user }}/hamradio/ambeserver-install
-      state: absent
-
-  - name: Restart ambeserver@ThumbDV service using optimized binary
-    become: yes
-    command: systemctl restart ambeserver@ThumbDV
-    ignore_errors: yes
-    # systemctl returns error if ThumbDV isn't present
+    - name: Clone AMBEserver install tree
+      git:
+        repo: https://github.com/nwdigitalradio/ambeserver-install.git
+        dest: /opt/ambeserver-install
+        depth: 1

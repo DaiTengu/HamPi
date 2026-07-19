@@ -1,69 +1,35 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# F4HTBPanadapter — standalone panadapter/PNA. The original HamPi removed it as "Build broken
+# under Bookworm"; that note is stale. It builds on Trixie/aarch64 after downgrading GCC 14's
+# narrowing/permissive errors (one Makefile sed), against system FFTW + ALSA.
 #
-
-- name: Install IQ Receiver Panadaptor Software (like KX3)
-  hosts: all
-  gather_facts: no
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install F4HTBPanadapter (removed as too-hard in original HamPi)
+  hosts: hampi
+  become: yes
+  tags: f4htbpna
   tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name: [git, build-essential, libfftw3-dev, libasound2-dev]
 
-  - name: Create directory hamradio
-    file:
-      path: /home/{{ ham_user }}/hamradio
-      state: directory
+    - name: Clone F4HTBPanadapter
+      git:
+        repo: https://github.com/F4HTB/F4HTBPanadapter.git
+        dest: /usr/local/src/F4HTBPanadapter
+        depth: 1
+        force: yes          # the build seds the Makefile in-tree; force keeps re-runs idempotent
 
-  - name: Install dependent libraries (Common)
-    become: yes
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - libfftw3-dev
-      - libasound2-dev
-
-  - name: Git clone F4HTBPanadapter
-    git:
-      repo: https://github.com/F4HTB/F4HTBPanadapter.git
-      dest: /home/{{ ham_user }}/hamradio/F4HTBPanadapter
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Fix Makefile to work around "breakage"
-    command: sed 's/CFLAGS += -Wall -Wextra -g -O0/CFLAGS += -Wall -Wextra -g -O0 -fpermissive -Wno-narrowing/' -i Makefile
-    args:
-      warn: no
-      chdir: /home/{{ ham_user }}/hamradio/F4HTBPanadapter
-
-  - name: Rewrite F4HTBPanadapter project install prefix
-    replace:
-      path: /home/{{ ham_user }}/hamradio/F4HTBPanadapter/Makefile
-      regexp: 'prefix=/usr/local'
-      replace: 'prefix=/usr'
-
-  - name: Pre-clean F4HTBPanadapter
-    command: make clean
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/F4HTBPanadapter
-
-  - name: Build F4HTBPanadapter
-    command: make
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/F4HTBPanadapter
-
-  - name: Install F4HTBPanadapter
-    become: yes
-    command: make install
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/F4HTBPanadapter
-
-  - name: Remove F4HTBPanadapter build directory
-    file:
-      path: /home/{{ ham_user }}/hamradio/F4HTBPanadapter
-      state: absent
+    - name: Build + install F4HTBPanadapter (GCC 14 permissive/narrowing patch)
+      shell: |
+        set -e
+        cd /usr/local/src/F4HTBPanadapter
+        sed -i 's/-O0/-O0 -fpermissive -Wno-narrowing/' Makefile
+        make
+        bin=$(find . -maxdepth 2 -type f -executable ! -name '*.sh' ! -name '*.o' | head -1)
+        install -m 0755 "$bin" /usr/local/bin/F4HTBPanadapter
+      args:
+        creates: /usr/local/bin/F4HTBPanadapter

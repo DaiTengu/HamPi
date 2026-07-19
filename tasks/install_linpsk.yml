@@ -1,0 +1,42 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# linpsk — PSK31/RTTY soundcard program. Built from the maintained dl1ksv Qt5 fork
+# (the original SourceForge Qt4 release is dead; Qt4 is gone from Trixie).
+#
+- name: Install linpsk (PSK31/RTTY)
+  hosts: hampi
+  become: yes
+  tags: linpsk
+  tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name:
+          - git
+          - build-essential
+          - qtbase5-dev
+          - qt5-qmake
+          - qtmultimedia5-dev
+          - libfftw3-dev
+          - libasound2-dev
+          - libhamlib-dev
+
+    - name: Clone linpsk (dl1ksv Qt5 fork)
+      git:
+        repo: https://github.com/dl1ksv/linpsk.git
+        dest: /usr/local/src/linpsk
+        depth: 1
+
+    - name: Build + install linpsk
+      shell: |
+        set -e
+        cd /usr/local/src/linpsk
+        rm -rf build && mkdir build && cd build
+        qmake ..
+        make -j"$(nproc)"
+        bin=$(find . -maxdepth 3 -name linpsk -type f -executable | head -1)
+        install -m 0755 "$bin" /usr/bin/linpsk
+      args:
+        creates: /usr/bin/linpsk

@@ -1,5 +1,6 @@
 #!/usr/bin/expect -f
-# Copyright 2020 - 2023, Dave Slotter, W3DJS
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 set timeout 120
 match_max 100000

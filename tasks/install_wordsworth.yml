@@ -1,34 +1,45 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# Wordsworth (KB1OIQ/K1IG) — Morse-code trainer scripts. Arch-independent; unpacked to /opt
+# and exposed via a launcher. No compilation.
 #
-
-- name: Install Wordsworth
-  hosts: all
-  gather_facts: no
+- name: Install Wordsworth (Morse trainer)
+  hosts: hampi
+  become: yes
+  tags: wordsworth
   tasks:
+    - name: Ensure unzip present
+      apt:
+        name: unzip
+        state: present
 
-#
-# Install Wordsworth
-#
+    - name: Create /opt/wordsworth
+      file:
+        path: /opt/wordsworth
+        state: directory
+        mode: "0755"
 
-  - name: Create directory hamradio
-    become: yes
-    file:
-      path: /home/{{ ham_user }}/hamradio
-      state: directory
+    - name: Download + unpack Wordsworth
+      unarchive:
+        src: https://sourceforge.net/projects/kb1oiq-k1ig-wordsworth/files/wordsworth/wordsworth_0.3.zip/download
+        dest: /opt/wordsworth
+        remote_src: yes
+        validate_certs: no
+        creates: /opt/wordsworth/wordsworth_0.3
+      register: dl
+      retries: 3
+      delay: 10
+      until: dl is succeeded
 
-  - name: Download and Unarchive latest KB1OIQ - Wordsworth
-    unarchive:
-      src: https://sourceforge.net/projects/kb1oiq-k1ig-wordsworth/files/wordsworth/wordsworth_0.3.zip/download
-      dest: /home/{{ ham_user }}/hamradio
-      remote_src: yes
-      validate_certs: no
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Decompress Wordsworth
-    shell: gunzip *.gz
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/wordsworth_0.3
+    - name: Decompress bundled .gz + install launcher
+      shell: |
+        set -e
+        cd /opt/wordsworth/wordsworth_0.3
+        gunzip -f *.gz 2>/dev/null || true
+        chmod +x wordsworth 2>/dev/null || true
+        printf '#!/bin/sh\ncd /opt/wordsworth/wordsworth_0.3 && exec ./wordsworth "$@"\n' > /usr/local/bin/wordsworth
+        chmod 0755 /usr/local/bin/wordsworth
+      args:
+        creates: /usr/local/bin/wordsworth

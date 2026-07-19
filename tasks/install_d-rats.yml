@@ -1,51 +1,79 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# D-Rats (maurizioandreotti / ham-radio-software fork) — D-STAR (and generic) data terminal:
+# chat, file transfer, forms, maps. Pure Python 3 / GTK3 (PyGObject); all deps are in Trixie
+# apt (no Qt, no compiled bits of our own). Run from the checkout via a launcher.
 #
-
-- name: Install D-Rats
-  hosts: all
-  gather_facts: no
+- name: Install D-Rats (D-STAR data terminal)
+  hosts: hampi
+  become: yes
+  tags: d_rats
   tasks:
+    - name: Install runtime dependencies (GTK3 + python libs, all apt)
+      apt:
+        state: present
+        name:
+          - git
+          - libcairo2-dev
+          - libgirepository1.0-dev
+          - python3-gi
+          - python3-gi-cairo
+          - gir1.2-gtk-3.0
+          - python3-pil
+          - python3-pyaudio
+          - python3-lxml
+          - python3-serial
+          - python3-geopy
+          - python3-feedparser
+          - python3-pycountry
+          - python3-flask
+          - python3-gevent
+          - python3-greenlet
 
-  - name: Create directory /usr/local/share/applications
-    become: yes
-    file:
-      path: /usr/local/share/applications
-      state: directory
+    - name: Install pydub + audioop-lts (not packaged; audioop was dropped from Python 3.13)
+      pip:
+        name:
+          - pydub
+          - audioop-lts
+        extra_args: --break-system-packages
 
-  - name: Download D-Rats sources from John and Maurizio's GitHub
-    git:
-      repo: https://github.com/ham-radio-software/D-Rats.git
-      dest: /home/{{ ham_user }}/hamradio/D-Rats
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Clone D-Rats (ham-radio-software fork)
+      git:
+        repo: https://github.com/ham-radio-software/D-Rats.git
+        dest: /opt/D-Rats
+        depth: 1
 
-  - name: Modify categories for d-rats.desktop
-    become: yes
-    lineinfile:
-      path: /home/{{ ham_user }}/hamradio/D-Rats/share/d-rats.desktop
-      regexp: '^Categories=.*'
-      line: Categories=HamRadio D-Rats
+    - name: Make D-Rats writable in-tree (it writes a version cache at launch; username-agnostic)
+      file:
+        path: /opt/D-Rats
+        mode: "a+rwX"
+        recurse: yes
+      # ponytail: world-writable /opt/D-Rats keeps the in-tree version-cache write working for
+      # whatever username the image owner creates at first boot. Cleaner fix to verify at the
+      # release milestone: pre-generate d_rats/setup_version.py at build so no runtime write is
+      # needed, then keep the tree root-owned.
 
-  - name: Modify categories for d-rats_repeater.desktop
-    become: yes
-    lineinfile:
-      path: /home/{{ ham_user }}/hamradio/D-Rats/share/d-rats_repeater.desktop
-      regexp: '^Categories=.*'
-      line: Categories=HamRadio D-Rats
+    - name: D-Rats launcher
+      copy:
+        dest: /usr/local/bin/d-rats
+        mode: "0755"
+        content: |
+          #!/bin/sh
+          cd /opt/D-Rats
+          [ -f d-rats ] && exec python3 ./d-rats "$@"
+          exec python3 ./d-rats.py "$@"
 
-  - name: Copy D-Rats desktop file
-    become: yes
-    copy:
-      src: "/home/{{ ham_user }}/hamradio/D-Rats/share/d-rats.desktop"
-      dest: "/usr/local/share/applications/d-rats.desktop"
-      remote_src: yes
-
-  - name: Copy D-Rats Repeater desktop file
-    become: yes
-    copy:
-      src: "/home/{{ ham_user }}/hamradio/D-Rats/share/d-rats_repeater.desktop"
-      dest: "/usr/local/share/applications/d-rats_repeater.desktop"
-      remote_src: yes
+    - name: D-Rats desktop entry
+      copy:
+        dest: /usr/share/applications/d-rats.desktop
+        mode: "0644"
+        content: |
+          [Desktop Entry]
+          Name=D-Rats
+          Comment=D-STAR / generic data terminal (chat, files, forms, maps)
+          Exec=d-rats
+          Terminal=false
+          Type=Application
+          Categories=HamRadio;

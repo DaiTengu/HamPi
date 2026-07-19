@@ -1,0 +1,22 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Antenna modeling / RF analysis tools (Trixie apt, arm64).
+# Note: xnecview, antennavis, gsmc were dropped from Trixie; xnec2c covers
+# the modeling + gain-pattern visualization those provided.
+#
+- name: Install antenna modeling tools
+  hosts: hampi
+  become: yes
+  tags: antenna
+  tasks:
+    - name: apt-install antenna modeling packages
+      apt:
+        update_cache: yes
+        state: present
+        name:
+          - nec2c        # NEC2 method-of-moments engine (C port)
+          - xnec2c       # NEC2 GUI: geometry + gain patterns
+          - yagiuda      # Yagi-Uda array analysis
+          - splat        # point-to-point RF path / coverage analysis

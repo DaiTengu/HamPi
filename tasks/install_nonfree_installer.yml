@@ -1,0 +1,49 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# "HamPi64 Extras" first-run installer for the DEFERRED non-free components (SDRplay API,
+# DroidStar/AMBE, HamRS). The image build does NOT bake these in — their tasks end_play unless
+# include_nonfree=true. This ships the lightweight bits the on-device flow needs:
+#   * zenity + a terminal (the launcher's runtime)
+#   * the shared installer scripts under /usr/lib/hampi64/nonfree/
+#   * the GUI launcher + desktop entry
+# so the operator installs those pieces on their OWN device, under each vendor's license.
+# The same files/nonfree/*.sh scripts are what the gated Ansible tasks run — one source of
+# truth, and NO ansible runtime on the Pi. HamPi64 never redistributes the non-free payloads.
+#
+- name: Install the HamPi64 Extras (non-free) launcher
+  hosts: hampi
+  become: yes
+  tags: nonfree_installer
+  tasks:
+    - name: Install the Extras runtime (zenity + a terminal)
+      apt:
+        state: present
+        name:
+          - zenity
+          - lxterminal
+
+    - name: Create /usr/lib/hampi64/nonfree
+      file:
+        path: /usr/lib/hampi64/nonfree
+        state: directory
+        mode: "0755"
+
+    - name: Ship the shared non-free installer scripts
+      copy:
+        src: "{{ playbook_dir }}/../files/nonfree/"
+        dest: /usr/lib/hampi64/nonfree/
+        mode: "0755"
+
+    - name: Install the HamPi64 Extras launcher
+      copy:
+        src: "{{ playbook_dir }}/../files/usr/local/bin/hampi64-extras"
+        dest: /usr/local/bin/hampi64-extras
+        mode: "0755"
+
+    - name: Install the HamPi64 Extras desktop entry
+      copy:
+        src: "{{ playbook_dir }}/../files/usr/share/applications/hampi64-extras.desktop"
+        dest: /usr/share/applications/hampi64-extras.desktop
+        mode: "0644"

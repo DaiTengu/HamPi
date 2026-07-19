@@ -1,86 +1,36 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# Reverse Beacon Network client (hmatuschek/skcc) — Qt5 CW skimmer/RBN spotting client.
+# CMake build against Qt5; builds on aarch64.
 #
-
-- name: Install RBNC - Client for reverse beacon network
-  hosts: all
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install Reverse Beacon Network client
+  hosts: hampi
+  become: yes
+  tags: reverse_beacon
   tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        # qttools5-dev supplies the Qt5LinguistTools CMake package (clean-build catch — the dev
+        # Pi had it via WSJT-Z's deps).
+        name: [git, cmake, g++, qtbase5-dev, qtmultimedia5-dev, qttools5-dev, libfftw3-dev, libpulse-dev]
 
-  - name: Create directory hamradio
-    file:
-      path: /home/{{ ham_user }}/hamradio
-      state: directory
+    - name: Clone RBN client (hmatuschek/skcc)
+      git:
+        repo: https://github.com/hmatuschek/skcc.git
+        dest: /usr/local/src/rbnc-skcc
+        depth: 1
 
-  - name: Install dependent libraries
-    become: yes
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - build-essential
-      - git
-      - libusb-1.0-0-dev
-      - qtbase5-dev
-      - qttools5-dev
-      - qttools5-dev-tools
-      - qtpositioning5-dev
-      - libqt5serialport5-dev
-      - qtmultimedia5-dev
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Git clone latest RBNC sources
-    git:
-      repo: https://github.com/hmatuschek/skcc
-      dest: /home/{{ ham_user }}/hamradio/skcc
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Create directory skcc/build
-    file:
-      path: /home/{{ ham_user }}/hamradio/skcc/build
-      state: directory
-
-  - name: Build RBNC Makefiles
-    command: cmake -Wno-dev --install-prefix=/usr ..
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/skcc/build
-
-  - name: Build RBNC
-    command: make
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/skcc/build
-
-  - name: Install RBNC
-    become: yes
-    command: make install
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/skcc/build
-
-  - name: Modify categories for rbnc.desktop
-    become: yes
-    lineinfile:
-      path: /usr/share/applications/rbnc.desktop
-      regexp: '^Categories=.*'
-      line: Categories=HamRadio
-
-  - name: Modify icon path for rbnc.desktop
-    become: yes
-    lineinfile:
-      path: /usr/share/applications/rbnc.desktop
-      regexp: '^Icon=rbnc'
-      line: Icon=/usr/local/share/icons/hicolor/64x64/apps/rbnc.png 
-
-  - name: Remove RBNC
-    file:
-      path: /home/{{ ham_user }}/hamradio/skcc
-      state: absent
+    - name: Build + install RBN client
+      shell: |
+        set -e
+        cd /usr/local/src/rbnc-skcc
+        rm -rf build && mkdir build && cd build
+        cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=/usr/local ..
+        make -j"$(nproc)"
+        make install
+        touch /usr/local/src/rbnc-skcc/.hampi-built
+      args:
+        creates: /usr/local/src/rbnc-skcc/.hampi-built

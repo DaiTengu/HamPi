@@ -1,0 +1,32 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# predict (KD2BD) — satellite tracking/prediction (ncurses). Never packaged in Debian; built
+# from the jj1bdx fork (plain Makefile, no interactive root installer). Pure portable C.
+#
+- name: Install predict (satellite tracking)
+  hosts: hampi
+  become: yes
+  tags: predict
+  tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name: [git, build-essential, libncurses-dev]
+
+    - name: Clone predict (jj1bdx fork)
+      git:
+        repo: https://github.com/jj1bdx/predict.git
+        dest: /usr/local/src/predict
+        depth: 1
+
+    - name: Build + install predict
+      shell: |
+        set -e
+        cd "$(find /usr/local/src/predict -name Makefile -printf '%h\n' | head -1)"
+        make CC="cc -fpermissive" || make
+        bin=$(find /usr/local/src/predict -name predict -type f -executable | head -1)
+        install -m 0755 "$bin" /usr/local/bin/predict
+      args:
+        creates: /usr/local/bin/predict

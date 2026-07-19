@@ -1,35 +1,16 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# Go toolchain — used to build several Go ham apps (adifmt, callrec). Trixie packages a current
+# Go, so no manual tarball needed.
 #
-
-- name: Install Go language
-  hosts: all
-  gather_facts: no
+- name: Install Go toolchain
+  hosts: hampi
+  become: yes
+  tags: golang
   tasks:
-
-  - name: Download latest go sources (ARM)
-    become: yes
-    unarchive:
-      src: https://go.dev/dl/go1.19.4.linux-armv6l.tar.gz
-      dest: /usr
-      remote_src: yes
-    when: is_arm|bool
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Download latest go sources (Xubuntu)
-    become: yes
-    unarchive:
-      src: https://go.dev/dl/go1.19.4.linux-amd64.tar.gz
-      dest: /usr
-      remote_src: yes
-    when: is_hampc|bool
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-# Note: .bash_local configuration for GO added in
-#  tasks/configuration_tasks.yml
+    - name: Install golang-go
+      apt:
+        name: golang-go
+        state: present

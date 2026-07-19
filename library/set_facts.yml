@@ -1,163 +1,27 @@
+# HamPi64 — a 64-bit fork of HamPi for Raspberry Pi OS Trixie / Pi 5 (github.com/DaiTengu/HamPi64).
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS   (original HamPi)
+# Copyright (C) 2026 Mike Miller, KD9QHQ        (HamPi64 fork)
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# HamPi64 target sanity check. The original multi-platform fact-setting (HamPC/HamIQ, and the
+# Buster/Bullseye/Bookworm/Impish/Jammy branches) is gone — HamPi64 targets only 64-bit
+# Raspberry Pi OS "Trixie" on the Raspberry Pi 5. This play fails fast, before anything is
+# installed, if the playbook is pointed at the wrong target.
 #
-
-- name: Set HamPi / HamPC / HamIQ facts
-  hosts: all
+- name: HamPi64 target sanity check
+  hosts: hampi
   gather_facts: yes
   tasks:
+    - name: Require 64-bit ARM (aarch64 — Raspberry Pi 5)
+      assert:
+        that: ansible_architecture == "aarch64"
+        fail_msg: "HamPi64 targets 64-bit ARM (aarch64); this host is {{ ansible_architecture }}."
 
-  - name: Set default settings to False
-    set_fact:
-      is_hampc: False
-      is_rpi: False
-      is_pc: False
-      is_iq: False
-      is_i386: False
-      is_arm: False
-      is_x86_64: False
-
-  - name: Set facts for ARM CPU
-    set_fact:
-      is_arm: True
-      is_x86_64: False
-    when: ansible_architecture == 'armhf' or ansible_architecture == 'armv7l' or ansible_architecture == "aarch64"
-
-  - name: Set facts for 64-bit ARM CPU
-    set_fact:
-      is_arm: True
-      is_arm_64: True
-      is_x86_64: False
-    when: ansible_architecture == 'armhf' or ansible_architecture == 'armv7l' or ansible_architecture == "aarch64"
-
-  - name: Set facts for 32-bit x86 CPU
-    set_fact:
-      is_i386: True
-      is_arm: False
-      is_x86_64: False
-    when: ansible_architecture == "i386"
-
-  - name: Set facts for 64-bit x86 CPU
-    set_fact:
-      is_arm: False
-      is_x86_64: True
-    when: ansible_architecture == "x86_64" or ansible_architecture == "amd64"
-
-  - name: Set facts for Debian
-    set_fact:
-      is_debian: True
-      is_ubuntu: False
-    when: ansible_distribution == "Debian" and ansible_os_family == "Debian"
-
-  - name: Set facts for Ubuntu / Xubuntu
-    set_fact:
-      is_debian: False
-      is_ubuntu: True
-    when: ansible_distribution == "Ubuntu" and ansible_os_family == "Debian"
-
-  - name: Set facts for Debian Buster
-    set_fact:
-      is_buster: True
-      is_bullseye: False
-      is_bookworm: False
-      is_jammy: False
-    when: (is_debian|bool or is_ubuntu|bool) and ansible_distribution_major_version == "10"
-
-  - name: Set facts for Debian Bullseye
-    set_fact:
-      is_buster: False
-      is_bullseye: True
-      is_bookworm: False
-      is_jammy: False
-    when: (is_debian|bool or is_ubuntu|bool) and ansible_distribution_release == "bullseye"
-
-  - name: Set facts for Debian Bookworm
-    set_fact:
-      is_buster: False
-      is_bullseye: False
-      is_bookworm: True
-      is_jammy: False
-    when: (is_debian|bool or is_ubuntu|bool) and ansible_distribution_release == "bookworm"
-
-  - name: Set facts for Ubuntu Jammy
-    set_fact:
-      is_buster: False
-      is_bullseye: True
-      is_bookworm: False
-      is_jammy: True
-    when: (is_debian|bool or is_ubuntu|bool) and ansible_distribution_release == "jammy"
-
-  - name: Set facts for Ubuntu Impish
-    set_fact:
-      is_buster: False
-      is_bullseye: True
-      is_bookworm: False
-      is_jammy: False
-      is_impish: True
-    when: (is_debian|bool or is_ubuntu|bool) and ansible_distribution_release == "impish"
-
-  - name: Set facts for Debian Bullseye on Ubuntu
-    set_fact:
-      is_buster: False
-      is_bullseye: True
-      is_bookworm: False
-      is_jammy: False
-      is_impish: False
-    when: (is_debian|bool or is_ubuntu|bool) and ansible_distribution_major_version == "21"
-
-  - name: Set facts for Raspberry Pi
-    set_fact:
-      is_rpi: True
-      is_pc: False
-      is_iq: False
-    when: ansible_lsb.id == "Raspbian" or ansible_lsb.id == "Debian"
-
-  - name: Set facts for Inovato Quadra
-    set_fact:
-      is_iq: True
-      is_rpi: False
-      is_pc: False
-    when: inventory_hostname == "inovato"
-
-  - name: Set facts for PC running Ubuntu / Xubuntu
-    set_fact:
-      is_pc: True
-      is_rpi: False
-      is_iq: False
-    when: is_ubuntu|bool and is_x86_64|bool 
-
-  - name: Confirm CPU is consistent
-    assert:
-      that: is_arm != is_x86_64
-      fail_msg:
-        - "Both is_arm and is_x86_64 cannot match"
-
-  - name: Confirm OS is consistent
-    assert:
-      that: is_debian != is_ubuntu
-      fail_msg:
-        - "Both is_debian and is_ubuntu cannot match"
-
-#  - name: Confirm Debian version is consistent
-#    assert:
-#      that: is_buster != is_bullseye
-#      fail_msg:
-#        - "Both is_buster and is_bullseye cannot match"
-
-#  - name: Confirm Platform is consistent 1
-#    assert:
-#      that: is_rpi != True and is_pc != True
-#      fail_msg:
-#        - "Both is_rpi and is_pc cannot match"
-#
-#  - name: Confirm Platform is consistent 2
-#    assert:
-#      that: is_rpi != True and is_iq != True
-#      fail_msg:
-#        - "Both is_rpi and is_iq cannot match"
-#
-#  - name: Confirm Platform is consistent 3
-#    assert:
-#      that: is_iq != True and is_pc != True
-#      fail_msg:
-#        - "Both is_iq and is_pc cannot match"
+    - name: Require Raspberry Pi OS "Trixie" (Debian 13)
+      assert:
+        that:
+          - ansible_distribution == "Debian"
+          - ansible_distribution_release == "trixie"
+        fail_msg: >-
+          HamPi64 targets Raspberry Pi OS Trixie (Debian 13);
+          this host is {{ ansible_distribution }} {{ ansible_distribution_release }}.

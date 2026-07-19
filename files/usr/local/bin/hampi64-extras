@@ -1,0 +1,105 @@
+#!/bin/bash
+# HamPi64 Extras — GUI installer for the non-free components deliberately NOT baked into the
+# image (proprietary or patent-encumbered). Each is fetched HERE, on this device, under its
+# vendor's own license — HamPi64 does not redistribute them. Runs the shared installer scripts
+# in /usr/lib/hampi64/nonfree/ (same scripts the Ansible bake path uses). No ansible needed.
+#
+# Copyright (C) 2026 Mike Miller, KD9QHQ
+# SPDX-License-Identifier: GPL-3.0-or-later
+set -euo pipefail
+
+SCRIPT_DIR=/usr/lib/hampi64/nonfree
+
+# Log the whole run, and keep the window open at the end so a failure is readable
+# (when launched from the menu the terminal would otherwise vanish on exit).
+LOG="${HOME:-/tmp}/hampi64-extras.log"
+exec > >(tee -a "$LOG") 2>&1
+echo "===== HamPi64 Extras — $(date) ====="
+pause() { [ -t 0 ] && { echo; read -rp "Press Enter to close this window... " _ || true; }; }
+trap pause EXIT
+
+# id | display label  (id == /usr/lib/hampi64/nonfree/<id>.sh and its license notice below)
+components=(
+  "hamrs|HamRS logger  —  closed-source freeware"
+  "sdrplay|SDRplay RSP API + SoapySDRPlay3  —  proprietary (SDRplay Ltd)"
+  "droidstar|DroidStar (DMR/D-STAR/YSF/P25/NXDN/M17)  —  uses patented AMBE codec"
+)
+
+notice() {
+  case "$1" in
+    hamrs) cat <<'EOF'
+HamRS is CLOSED-SOURCE freeware, © HamRS.
+
+HamPi64 does not include or redistribute it. If you continue, the official
+arm64 AppImage will be downloaded from the vendor and installed on THIS device
+under HamRS's own terms:
+
+    https://hamrs.app/
+EOF
+      ;;
+    sdrplay) cat <<'EOF'
+The SDRplay RSP API is PROPRIETARY software, © SDRplay Ltd.
+
+HamPi64 does not include or redistribute it. If you continue, it will be
+downloaded directly from sdrplay.com and installed on THIS device under
+SDRplay's own license:
+
+    https://www.sdrplay.com/
+
+Only the open-source SoapySDRPlay3 glue module is built by HamPi64.
+EOF
+      ;;
+    droidstar) cat <<'EOF'
+DroidStar itself is GPL software, but its digital-voice modes rely on the
+AMBE / AMBE+2 vocoder, which is PATENTED (DVSI) and is run here via firmware
+extracted from a TYT MD-380 radio.
+
+HamPi64 does not redistribute the vocoder. Building or using it on this device
+may require a codec patent license in your jurisdiction. Continue only if you
+understand and accept that responsibility.
+EOF
+      ;;
+  esac
+}
+
+# --- pick components ---
+rows=()
+for c in "${components[@]}"; do
+  IFS='|' read -r id label <<<"$c"
+  rows+=(FALSE "$id" "$label")
+done
+
+picked=$(zenity --list --checklist \
+  --title="HamPi64 Extras" --width=780 --height=340 \
+  --text="These non-free components are not included in the image.\nTick any you want to download and install (each under its own vendor license):" \
+  --column="Install" --column="id" --column="Component" \
+  --hide-column=2 "${rows[@]}" 2>/dev/null) || exit 0
+[ -z "$picked" ] && exit 0
+
+# --- license accept per component ---
+accepted=()
+IFS='|' read -ra sel <<<"$picked"
+for id in "${sel[@]}"; do
+  if notice "$id" | zenity --text-info --title="License — $id" \
+        --width=700 --height=440 \
+        --checkbox="I have read and accept these terms." 2>/dev/null; then
+    accepted+=("$id")
+  fi
+done
+[ ${#accepted[@]} -eq 0 ] && { zenity --info --text="Nothing installed." 2>/dev/null || true; exit 0; }
+
+# --- install each via its shared script (needs root; sudo prompts in this terminal) ---
+echo "Installing: ${accepted[*]}"
+echo "You may be prompted for your password (system-wide install)."
+rc=0
+for id in "${accepted[@]}"; do
+  echo "===== $id ====="
+  sudo "$SCRIPT_DIR/$id.sh" || rc=1
+done
+
+if [ "$rc" -eq 0 ]; then
+  zenity --info --title="HamPi64 Extras" --text="Done. Installed: ${accepted[*]}" 2>/dev/null || true
+else
+  zenity --error --title="HamPi64 Extras" \
+    --text="One or more installs failed — see the terminal output above." 2>/dev/null || true
+fi

@@ -1,55 +1,37 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# JS8Call Utilities V2 (M0IAX) — companion Python tools for JS8Call (APRS, telemetry, etc.).
+# Pure Python; cloned to /opt and exposed via a launcher.
 #
-
-- name: Install JS8CallUtilities
-  hosts: all
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install JS8Call Utilities
+  hosts: hampi
+  become: yes
+  tags: js8callutilities
   tasks:
+    - name: Install dependencies
+      apt:
+        state: present
+        name: [git, python3, python3-serial]
 
-  - name: Create directory hamradio
-    file:
-      path: /home/{{ ham_user }}/hamradio
-      state: directory
+    - name: Install python libs not in apt (system-wide)
+      pip:
+        name: [maidenhead, gps, configparser]
+        extra_args: --break-system-packages
 
-  - name: Install dependent components
-    become: yes
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - python3
-      - python3-pip
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Clone JS8CallUtilities_V2 (M0IAX)
+      git:
+        repo: https://github.com/m0iax/JS8CallUtilities_V2.git
+        dest: /opt/JS8CallUtilities_V2
+        depth: 1
 
-  - name: Install Python packages for JS8CallUtilities
-    become: yes
-    shell: pip3 install maidenhead gps pyserial configparser
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Download latest JS8CallUtilities sources
-    become: yes
-    git:
-      repo: https://github.com/m0iax/JS8CallUtilities_V2
-      dest: /usr/local/JS8CallUtilities_V2
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Set JS8CallUtilities dir to owned by ham user
-    become: yes
-    file:
-      path: /usr/local/JS8CallUtilities_V2
-      owner: "{{ ham_user }}"
-      group: "{{ ham_user }}"
+    - name: Launcher
+      copy:
+        dest: /usr/local/bin/js8callutilities
+        mode: "0755"
+        content: |
+          #!/bin/sh
+          cd /opt/JS8CallUtilities_V2
+          main=$(ls JS8*.py 2>/dev/null | head -1)
+          exec python3 "./$main" "$@"

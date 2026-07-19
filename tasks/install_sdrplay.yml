@@ -1,0 +1,24 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# SDRplay RSP support: the PROPRIETARY SDRplay API (© SDRplay Ltd) + the open-source
+# SoapySDRPlay3 module. DEFERRED non-free: NOT baked into the image (this play ends unless
+# include_nonfree=true). On the image it is installed on demand by the "HamPi64 Extras"
+# launcher via files/nonfree/sdrplay.sh; this play runs that same shared script when a
+# maintainer bakes with `-e include_nonfree=true`. HamPi64 does not redistribute the API —
+# the vendor .run is fetched from sdrplay.com under SDRplay's license at install time.
+#
+- name: Install SDRplay RSP support (deferred non-free)
+  hosts: hampi
+  become: yes
+  tags: sdrplay
+  tasks:
+    - name: Deferred non-free — skip unless include_nonfree=true
+      meta: end_play
+      when: not (include_nonfree | default(false) | bool)
+
+    - name: Install SDRplay + SoapySDRPlay3 via the shared installer (files/nonfree/sdrplay.sh)
+      ansible.builtin.script:
+        cmd: "{{ playbook_dir }}/../files/nonfree/sdrplay.sh"
+        creates: /usr/local/lib/SoapySDR/modules0.8/libsdrPlaySupport.so

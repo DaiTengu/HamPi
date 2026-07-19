@@ -1,87 +1,28 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# SKCCLogger (K7MJG) — Straight Key Century Club logger. Official native arm64 .deb; it is an
+# Electron-style app that drives Chromium, so the .deb pulls chromium as a dependency.
 #
-
 - name: Install SKCCLogger
-  hosts: all
-  gather_facts: no
+  hosts: hampi
+  become: yes
+  tags: skcclogger
+  vars:
+    skcclogger_version: "v1.1.3"
   tasks:
+    - name: Download SKCCLogger arm64 .deb
+      get_url:
+        url: "https://github.com/K7MJG/SKCCLogger-releases/releases/download/{{ skcclogger_version }}/skcclogger-linux-arm64-{{ skcclogger_version }}.deb"
+        dest: /tmp/skcclogger.deb
+        mode: "0644"
+      retries: 3
+      delay: 10
+      register: dl
+      until: dl is succeeded
 
-#
-# ARM
-#
-
-  - name: Copy SKCCLogger from local file (because developer moved download behind a login) (ARM)
-    copy:
-      src: "{{ playbook_dir }}/../files/SKCCLogger_Linux_32-Bit-ARM.zip"
-      dest: "/home/{{ ham_user }}/hamradio/SKCCLogger_Linux_32-Bit-ARM.zip"
-    when: is_arm|bool and not is_arm_64|bool
-
-  - name: Unarchive SKCCLogger (ARM)
-    become: yes
-    unarchive:
-      src: "/home/{{ ham_user }}/hamradio/SKCCLogger_Linux_32-Bit-ARM.zip"
-      dest: /usr
-      remote_src: yes
-    when: is_arm|bool and not is_arm_64|bool
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Change Ownership of /usr/SKCCLogger_Linux_32-Bit-ARM to {{ ham_user }}
-    become: yes
-    file: dest=/usr/SKCCLogger_Linux_32-Bit-ARM owner={{ ham_user }} group={{ ham_user}} mode=775
-    when: is_arm|bool and not is_arm_64|bool
-
-  - name: Change Ownership of /usr/SKCCLogger_Linux_32-Bit-ARM to {{ ham_user }}
-    become: yes
-    shell: chown -R {{ ham_user }}.{{ ham_user }} /usr/SKCCLogger_Linux_32-Bit-ARM
-    args:
-      warn: false
-    when: is_arm|bool and not is_arm_64|bool
-
-  - name: Remove SKCCLogger from local file (ARM)
-    file:
-      path: "/home/{{ ham_user }}/hamradio/SKCCLogger_Linux_32-Bit-ARM.zip"
-      state: absent
-    when: is_arm|bool and not is_arm_64|bool
-
-#
-# Xubuntu
-#
-  - name: Copy SKCCLogger from local file (because developer moved download behind a login) (Xubuntu)
-    copy:
-      src: "{{ playbook_dir }}/../files/SKCCLogger_Linux_64-Bit.zip"
-      dest: "/home/{{ ham_user }}/hamradio/SKCCLogger_Linux_64-Bit.zip"
-    when: is_hampc|bool
-
-  - name: Unarchive SKCCLogger (Xubuntu)
-    become: yes
-    unarchive:
-      src: "/home/{{ ham_user }}/hamradio/SKCCLogger_Linux_64-Bit.zip"
-      dest: /usr
-      remote_src: yes
-    when: is_hampc|bool
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Change Ownership of /usr/SKCCLogger_Linux_64-Bit to {{ ham_user }}
-    become: yes
-    file: dest=/usr/SKCCLogger_Linux_64-Bit owner={{ ham_user }} group={{ ham_user}} mode=775
-    when: is_hampc|bool
-
-  - name: Change Ownership of /usr/SKCCLogger_Linux_64-Bit to {{ ham_user }}
-    become: yes
-    shell: chown -R {{ ham_user }}.{{ ham_user }} /usr/SKCCLogger_Linux_64-Bit
-    args:
-      warn: false
-    when: is_hampc|bool
-
-  - name: Remove SKCCLogger from local file (Xubuntu)
-    file:
-      path: "/home/{{ ham_user }}/hamradio/SKCCLogger_Linux_64-Bit.zip"
-      state: absent
-    when: is_hampc|bool
+    - name: Install SKCCLogger (resolves chromium dep)
+      apt:
+        deb: /tmp/skcclogger.deb
+        state: present

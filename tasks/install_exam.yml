@@ -1,0 +1,18 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Ham licence exam / training study tools (Trixie apt, arm64).
+#
+- name: Install exam / training tools
+  hosts: hampi
+  become: yes
+  tags: exam
+  tasks:
+    - name: apt-install exam study tools
+      apt:
+        update_cache: yes
+        state: present
+        name:
+          - fccexam       # US FCC commercial radio licence exam study
+          - hamexam       # US amateur radio licence exam study

@@ -1,0 +1,22 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Miscellaneous ham utilities (Trixie apt, arm64).
+#
+- name: Install miscellaneous ham utilities
+  hosts: hampi
+  become: yes
+  tags: misc
+  tasks:
+    - name: apt-install misc utilities
+      apt:
+        update_cache: yes
+        state: present
+        name:
+          - grig          # Hamlib rig-control GUI
+          - voacapl       # HF propagation prediction (VOACAP)
+          - gpsd          # GPS daemon
+          - gpsd-clients  # GPS client tools (cgps, gpsmon)
+          - xdx           # DX-cluster client
+          - wwl           # Maidenhead distance / azimuth calculator

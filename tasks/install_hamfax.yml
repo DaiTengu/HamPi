@@ -1,0 +1,33 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# hamfax — HF fax (WEFAX) send/receive with Hamlib rig control. The Debian package was dropped
+# (Qt4) in 2019; built here from the maintained Qt5 fork (sergioisidoro/ham-fax) via qmake.
+#
+- name: Install hamfax (HF fax)
+  hosts: hampi
+  become: yes
+  tags: hamfax
+  tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name: [git, build-essential, autoconf, automake, libtool, pkg-config, qtbase5-dev, qttools5-dev-tools, libaudiofile-dev, libhamlib-dev]
+
+    - name: Clone ham-fax (sergioisidoro Qt5 fork)
+      git:
+        repo: https://github.com/sergioisidoro/ham-fax.git
+        dest: /usr/local/src/ham-fax
+        depth: 1
+
+    - name: Build + install hamfax (autotools)
+      shell: |
+        set -e
+        cd /usr/local/src/ham-fax
+        autoreconf -fi
+        ./configure --prefix=/usr/local
+        make -j"$(nproc)"
+        make install
+      args:
+        creates: /usr/local/bin/hamfax

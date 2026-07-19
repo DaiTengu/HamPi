@@ -1,60 +1,49 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# UHRR — Universal HamRadio Remote (F4HTB): browser-based rig remote-control + audio over a
+# Tornado web server. Pure Python; apt provides tornado/numpy/alsaaudio/pyserial, pyrtlsdr via
+# pip. Cloned to /opt/UHRR; it is run/configured by the operator (not auto-started as a service).
 #
-
-- name: Install Universal Ham Radio Remote (UHRR)
-  hosts: all
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install UHRR (web rig remote)
+  hosts: hampi
+  become: yes
+  tags: uhrr
   tasks:
+    - name: Install dependencies
+      apt:
+        state: present
+        name:
+          - git
+          - python3-tornado
+          - python3-numpy
+          - python3-alsaaudio
+          - python3-serial
+          - python3-pyaudio
+          - libhamlib-utils
+          - libopus0
+          - swig
 
-  - name: Create directory hamradio
-    file:
-      path: /home/{{ ham_user }}/hamradio
-      state: directory
+    - name: Install pyrtlsdr (not packaged) into a shared venv
+      shell: |
+        set -e
+        python3 -m venv --system-site-packages /opt/uhrr-venv
+        /opt/uhrr-venv/bin/pip install --quiet pyrtlsdr
+        touch /opt/uhrr-venv/.hampi-built
+      args:
+        creates: /opt/uhrr-venv/.hampi-built
 
-  - name: Install dependent libraries for Universal Ham Radio Remote (UHRR)
-    become: yes
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - git
-      - autoconf
-      - automake
-      - libtool
-      - swig
-      - python3
-      - python3-pip
-      - python3-numpy
-      - python3-tornado
-      - python3-serial
-      - python3-pyaudio
-      - rtl-sdr
-      - libasound2-dev
-      - libopus0
-      - python3-pampy
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Clone UHRR (F4HTB)
+      git:
+        repo: https://github.com/F4HTB/Universal_HamRadio_Remote_HTML5.git
+        dest: /opt/UHRR
+        depth: 1
 
-  - name: Install Python module dependencies for Universal Ham Radio Remote (UHRR)
-    become: yes
-    command: pip3 install tornado pyalsaaudio numpy pyrtlsdr --break-system-packages
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Git clone latest Universal Ham Radio Remote (UHRR) sources
-    git:
-      repo: https://github.com/F4HTB/Universal_HamRadio_Remote_HTML5.git
-      dest: /home/{{ ham_user }}/hamradio/Universal_HamRadio_Remote_HTML5
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: UHRR launcher (runs from its checkout, in the pyrtlsdr venv)
+      copy:
+        dest: /usr/local/bin/uhrr
+        mode: "0755"
+        content: |
+          #!/bin/sh
+          cd /opt/UHRR && exec /opt/uhrr-venv/bin/python3 ./UHRR "$@"

@@ -1,23 +1,21 @@
 # Security Policy
 
-## Supported Versions
+## Supported versions
 
-Only the last released version of HamPi / HamPC / HamIQ are
-currently being supported with security updates.
+HamPi64 is a rolling fork. Security fixes land on `main` and in the most recent
+release; older releases are not maintained.
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
-To report a security vulnerability, please send an email to
-[HamPi / HamPC / HamIQ Security](mailto:security@slotter.net)
+Please report security issues **privately** through GitHub:
 
-Please report all relevant details to help us locate and correct the
-security vulnerability. This should include project name (HamPi,
-HamPC, or HamIQ ) plus version information for the distribution. If the
-vulnerability is in the HamPi / HamPC / HamIQ sources itself, reference
-the source code file and/or git commit information or release tag. Also
-include the specifics of the vulnerability and/or reference any
-external sources, such as CVE number or weblinks.
+- Preferred: open a draft security advisory at
+  <https://github.com/DaiTengu/HamPi64/security/advisories/new>.
+- For non-sensitive reports, a regular [issue](https://github.com/DaiTengu/HamPi64/issues) is fine.
 
-Reporting a vulnerability which is confirmed by staff will result in
-reporters receiving a credit plus a HamPi sticker being mailed to
-them (if mailing address is provided).
+Include enough detail to locate and reproduce it: the affected component or app, the
+HamPi64 release or commit, the relevant task file / source, and any external references
+(e.g. a CVE).
+
+HamPi64 mostly packages upstream amateur-radio software. If the vulnerability is in one of
+those upstream projects, please also report it to that project's maintainers.

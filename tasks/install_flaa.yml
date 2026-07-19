@@ -1,82 +1,29 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# flaa (W1HKJ) — control program for RigExpert AA-series antenna analyzers. FLTK autotools
+# build; GCC 14 builds it as-is (deprecation warnings only). Needs a RigExpert AA over USB
+# to do more than show its UI, but installs/builds fine.
 #
-
-- name: Install flaa
-  hosts: all
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install flaa (antenna analyzer control)
+  hosts: hampi
+  become: yes
+  tags: flaa
   tasks:
-
-    - name: Create directory hamradio
-      file:
-        path: /home/{{ ham_user }}/hamradio/
-        state: directory
-
-    - name: Install dependent libraries
-      become: yes
-      package:
-        name: "{{ item }}"
+    - name: Install build dependencies
+      apt:
         state: present
-      with_items:
-        - build-essential
-        - libfltk1.3-dev
-      retries: 5
-      delay: 30
-      register: result
-      until: result.failed == false
+        name: [build-essential, autoconf, automake, libfltk1.3-dev, libx11-dev]
 
-    - name: Determine latest version of flaa on web
-      shell: curl --silent "http://www.w1hkj.com/files/flaa/" | grep -Po "[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz" | grep -Po "[0-9]+\.[0-9]+\.[0-9]+" | uniq | tail -n 1
+    - name: Build + install flaa
+      shell: |
+        set -e
+        mkdir -p /usr/local/src/flaa && cd /usr/local/src/flaa
+        curl -fsSL https://www.w1hkj.org/files/flaa/flaa-1.0.2.tar.gz | tar xz
+        cd flaa-1.0.2
+        ./configure
+        make -j"$(nproc)"
+        make install
       args:
-        warn: no
-      register: download_date
-      retries: 5
-      delay: 30
-      until: download_date.failed == false
-
-    - name: Download and Unarchive flaa {{ download_date.stdout }}
-      unarchive:
-        src: "http://www.w1hkj.com/files/flaa/flaa-{{ download_date.stdout }}.tar.gz"
-        dest: /home/{{ ham_user }}/hamradio/
-        remote_src: yes
-      retries: 5
-      delay: 30
-      register: result
-      until: result.failed == false
-
-    - name: Configure flaa {{ download_date.stdout }}
-      command: ./configure --prefix=/usr
-      args:
-        chdir: /home/{{ ham_user }}/hamradio/flaa-{{ download_date.stdout }}
-
-    - name: Build flaa {{ download_date.stdout }}
-      command: make all
-      args:
-        chdir: /home/{{ ham_user }}/hamradio/flaa-{{ download_date.stdout }}
-
-    - name: Install flaa {{ download_date.stdout }}
-      become: yes
-      command: make install
-      args:
-        chdir: /home/{{ ham_user }}/hamradio/flaa-{{ download_date.stdout }}
-
-    - name: Modify categories for flaa.desktop
-      become: yes
-      lineinfile:
-        path: /usr/share/applications/flaa.desktop
-        regexp: '^Categories=.*'
-        line: Categories=HamRadio Fldigi
-
-    - name: Clean flaa {{ download_date.stdout }}
-      command: make clean
-      args:
-        chdir: /home/{{ ham_user }}/hamradio/flaa-{{ download_date.stdout }}
-
-    - name: Remove flaa {{ download_date.stdout }} build directory
-      file:
-        path: /home/{{ ham_user }}/hamradio/flaa-{{ download_date.stdout }}
-        state: absent
+        creates: /usr/local/bin/flaa

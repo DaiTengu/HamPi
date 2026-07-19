@@ -1,153 +1,74 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# wfview — Icom rig control (SDR/network/serial). Official arm64 AppImage (Tier 1);
+# replaces the original Qt5 source build. The bookworm-built AppImage runs on Trixie
+# (forward-compatible). Needs libfuse2.
 #
-
-- name: Install wfview - a program to control modern Icom ham radios
-  hosts: all
-  gather_facts: no
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+# The AppImage bundles wfview's rig-definition files (*.rig) and stylesheets, but the binary
+# looks for them at the absolute path /usr/share/wfview (where a .deb would install them). An
+# AppImage install populates nothing there, so wfview loads zero rig definitions and refuses
+# to connect ("No rig definition found for CI-V address ..."). We extract that tree out of the
+# AppImage into /usr/share/wfview so rig auto-detect (IC-7300 etc.) works on a clean image.
+#
+- name: Install wfview (Icom rig control)
+  hosts: hampi
+  become: yes
+  tags: wfview
+  vars:
+    wfview_version: "2.24"
   tasks:
+    - name: Install libfuse2 (AppImage runtime)
+      apt:
+        name: libfuse2t64
+        state: present
 
-  - name: Create directory hamradio
-    file:
-      path: /home/{{ ham_user }}/hamradio
-      state: directory
+    - name: Create /opt/wfview
+      file:
+        path: /opt/wfview
+        state: directory
+        mode: "0755"
 
-  - name: Install dependent libraries (Common)
-    become: yes
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - build-essential
-      - git
-      - qt5-qmake
-      - libqt5core5a
-      - qtbase5-dev
-      - libqt5serialport5
-      - libqt5serialport5-dev
-      - libqt5multimedia5
-      - libqt5multimedia5-plugins
-      - qtmultimedia5-dev
-      - libqcustomplot-doc
-      - libqcustomplot-dev
-      - libopus-dev
-      - libeigen3-dev
-      - libqt5gamepad5
-      - libqt5gamepad5-dev
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Download wfview AppImage (arm64)
+      get_url:
+        url: "https://github.com/wf-group/wfview/releases/download/v{{ wfview_version }}/wfview-linux-arm64-bookworm.AppImage"
+        dest: /opt/wfview/wfview.AppImage
+        mode: "0755"
+      retries: 3
+      delay: 10
+      register: dl
+      until: dl is succeeded
 
-  - name: Install dependent libraries (ARM Buster or Bullseye)
-    become: yes
-    package:
-      name: libqcustomplot2.0
-      state: present
-    when: is_arm|bool and (is_buster|bool or is_bullseye|bool)
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Install wfview's bundled rig definitions + stylesheets to /usr/share/wfview
+      shell: |
+        set -e
+        cd /opt/wfview
+        rm -rf squashfs-root
+        ./wfview.AppImage --appimage-extract >/dev/null
+        mkdir -p /usr/share/wfview
+        cp -r squashfs-root/usr/share/wfview/. /usr/share/wfview/
+        rm -rf squashfs-root
+      args:
+        creates: /usr/share/wfview/rigs/IC-7300.rig
 
-  - name: Install dependent libraries (ARM Buster)
-    become: yes
-    package:
-      name: qt5-default
-      state: present
-    when: is_arm|bool and is_buster|bool
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: wfview launcher
+      copy:
+        dest: /usr/bin/wfview
+        mode: "0755"
+        content: |
+          #!/bin/sh
+          exec /opt/wfview/wfview.AppImage "$@"
 
-  - name: Install dependent libraries (ARM Bookworm)
-    become: yes
-    package:
-      name: libqcustomplot2.1
-      state: present
-    when: is_arm|bool and is_bookworm|bool
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Git clone latest wfview sources
-    git:
-      repo: https://gitlab.com/eliggett/wfview.git
-      dest: /home/{{ ham_user }}/hamradio/wfview
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Create directory build
-    file:
-      path: /home/{{ ham_user }}/hamradio/build
-      state: directory
-
-  - name: Rewrite RtAudio include directory for rthandler.h
-    replace:
-      path: /home/{{ ham_user }}/hamradio/wfview/rthandler.h
-      regexp: '#include "rtaudio/RtAudio.h"'
-      replace: '#include "RtAudio.h"'
-
-  - name: Rewrite RtAudio include directories servermain.h
-    replace:
-      path: /home/{{ ham_user }}/hamradio/wfview/servermain.h
-      regexp: '#include "rtaudio/RtAudio.h"'
-      replace: '#include "RtAudio.h"'
-
-  - name: Rewrite RtAudio include directories audiodevices.h
-    replace:
-      path: /home/{{ ham_user }}/hamradio/wfview/audiodevices.h
-      regexp: '#include "rtaudio/RtAudio.h"'
-      replace: '#include "RtAudio.h"'
-
-  - name: Rewrite RtAudio include directories wfmain.h
-    replace:
-      path: /home/{{ ham_user }}/hamradio/wfview/wfmain.h
-      regexp: '#include "rtaudio/RtAudio.h"'
-      replace: '#include "RtAudio.h"'
-
-  - name: Rewrite wfview project install prefix
-    replace:
-      path: /home/{{ ham_user }}/hamradio/wfview/wfview.pro
-      regexp: '  PREFIX = /usr/local'
-      replace: '  PREFIX = /usr'
-
-  - name: Build wfview Makefiles
-    command: qmake ../wfview/wfview.pro
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/build
-
-  - name: Build wfview
-    command: make
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/build
-
-  - name: Install wfview
-    become: yes
-    command: make install
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/build
-
-  - name: Modify categories for wfview.desktop
-    become: yes
-    lineinfile:
-      path: /usr/share/applications/wfview.desktop
-      regexp: '^Categories=.*'
-      line: Categories=HamRadio
-
-  - name: Remove wfview source directories
-    file:
-      path: /home/{{ ham_user }}/hamradio/{{ item }}
-      state: absent
-    with_items:
-      - wfview
-      - build
+    - name: wfview desktop entry
+      copy:
+        dest: /usr/share/applications/wfview.desktop
+        mode: "0644"
+        content: |
+          [Desktop Entry]
+          Name=wfview
+          Comment=Icom rig control (SDR / network / serial)
+          Exec=wfview
+          Terminal=false
+          Type=Application
+          Categories=HamRadio;

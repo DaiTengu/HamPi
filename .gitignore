@@ -59,3 +59,8 @@ files/usr/share/wallpapers/j-38 key.jpg
 files/usr/share/wallpapers/morse-code.jpg
 files/usr/share/wallpapers/r8600_Wallpaper_1600x1200.jpg
 files/usr/share/wallpapers/raspberry-pi-logo.png
+
+# HamPi64 — internal working/session docs (kept locally, not published)
+docs/overnight-build-log.md
+docs/install-milestone-1.md
+docs/superpowers/

@@ -1,73 +1,35 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# QrssPiG (HB9FXX) — QRSS grabber: captures a spectrogram from an SDR/soundcard and uploads it.
+# Installed from the maintainer's own arm64 apt repo (debian.hb9fxx.ch), which has a Trixie suite.
 #
-
-- name: Install QrssPiG
-  hosts: all
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install QrssPiG (QRSS grabber)
+  hosts: hampi
+  become: yes
+  tags: qrsspig
   tasks:
+    - name: Ensure keyring dir exists
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
 
-  - name: Create directory hamradio
-    file:
-      path: /home/{{ ham_user }}/hamradio
-      state: directory
+    - name: Add HB9FXX repo signing key
+      get_url:
+        url: https://debian.hb9fxx.ch/debian/key.asc
+        dest: /etc/apt/keyrings/hb9fxx.asc
+        mode: "0644"
 
-  - name: Install dependent libraries
-    become: yes
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - libyaml-cpp-dev
-      - libfftw3-dev
-      - libgd-dev
-      - libliquid-dev
-      - librtfilter-dev
-      - libboost-filesystem-dev
-      - libasound2-dev
-      - libpulse-dev
-      - libcurl4-openssl-dev
-      - libssh-dev
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Add HB9FXX apt repo (Trixie)
+      copy:
+        dest: /etc/apt/sources.list.d/hb9fxx.list
+        mode: "0644"
+        content: "deb [signed-by=/etc/apt/keyrings/hb9fxx.asc] https://debian.hb9fxx.ch/debian/ trixie/\n"
 
-  - name: Git clone latest QrssPiG sources
-    git:
-      repo: https://gitlab.com/hb9fxx/qrsspig.git
-      dest: /home/{{ ham_user }}/hamradio/qrsspig
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Create directory qrsspig/build
-    file:
-      path: /home/{{ ham_user }}/hamradio/qrsspig/build
-      state: directory
-
-  - name: Build QrssPiG CMakeFiles
-    command: cmake --install-prefix=/usr ..
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/qrsspig/build
-
-  - name: Build QrssPiG
-    command: make
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/qrsspig/build
-
-  - name: Install QrssPiG
-    become: yes
-    command: make install
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/qrsspig/build
-
-  - name: Remove QrssPiG build directory
-    file:
-      path: /home/{{ ham_user }}/hamradio/qrsspig
-      state: absent
+    - name: Install qrsspig
+      apt:
+        name: qrsspig
+        state: present
+        update_cache: yes

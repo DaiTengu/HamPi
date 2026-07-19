@@ -1,52 +1,29 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# Fl_MoxGen (KB1OIQ/W1HKJ) — Moxon-antenna dimension generator. FLTK + libharu (PDF export).
+# Builds clean on aarch64 with Trixie's header locations; no patches.
 #
-
-- name: Install Fl_MoxGen
-  hosts: all
-  gather_facts: no
+- name: Install Fl_MoxGen (Moxon antenna generator)
+  hosts: hampi
+  become: yes
+  tags: flmoxgen
   tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name: [build-essential, libfltk1.3-dev, libhpdf-dev]
 
-#
-# Install Fl_MoxGen
-#
-
-  - name: Create directory hamradio
-    become: yes
-    file:
-      path: /home/{{ ham_user }}/hamradio
-      state: directory
-
-  - name: Download and Unarchive latest KB1OIQ - Fl_MoxGen
-    become: yes
-    unarchive:
-      src: https://sourceforge.net/projects/flmoxgen/files/latest/download
-      dest: /home/{{ ham_user }}/hamradio
-      remote_src: yes
-      validate_certs: no
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Build Fl_MoxGen
-    command: make
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/Fl_MoxGen-1.00
-
-  - name: Install Fl_MoxGen
-    become: yes
-    command: make install
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/Fl_MoxGen-1.00
-
-  - name: Copy Fl_MoxGen desktop file
-    become: yes
-    copy:
-      src: "{{ playbook_dir }}/../files/usr/local/share/applications/Fl_MoxGen.desktop"
-      dest: "/usr/local/share/applications/Fl_MoxGen.desktop"
-
-  - name: Remove Fl_MoxGen build directory
-    file:
-      path: /home/{{ ham_user }}/hamradio/Fl_MoxGen-1.00
-      state: absent
+    - name: Build + install Fl_MoxGen
+      shell: |
+        set -e
+        mkdir -p /usr/local/src/flmoxgen && cd /usr/local/src/flmoxgen
+        curl -fsSL https://downloads.sourceforge.net/project/flmoxgen/Fl_MoxGen-1.00.tar.gz | tar xz
+        cd Fl_MoxGen-1.00
+        # GCC 14: getcwd needs unistd.h and implicit-decl is now a hard error, so add it.
+        grep -ql unistd.h write_pdf.c || sed -i '1i #include <unistd.h>' write_pdf.c
+        make
+        make install
+      args:
+        creates: /usr/local/bin/fl_moxgen

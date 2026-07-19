@@ -1,59 +1,37 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# leansdr (pabr) — lightweight SDR toolkit; the leandvb DVB-S/S2 demodulator + tools used for
+# amateur DATV reception. The original HamPi marked it "SKIP FOR NOW". Header-only C++ core,
+# builds with a plain `make` in src/apps against system FFTW; no Qt. Builds clean on aarch64.
 #
-
-- name: Install leansdr Software
-  hosts: all
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install leansdr (leandvb DVB-S tools)
+  hosts: hampi
+  become: yes
+  tags: leansdr
   tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name:
+          - git
+          - build-essential
+          - libfftw3-dev
 
-  - name: Create directory hamradio
-    file:
-      path: /home/{{ ham_user }}/hamradio
-      state: directory
+    - name: Clone leansdr (pabr)
+      git:
+        repo: https://github.com/pabr/leansdr.git
+        dest: /usr/local/src/leansdr
+        depth: 1
 
-#
-# Build and install leansdr
-#
-
-  - name: Download latest leansdr sources
-    git:
-      repo: https://github.com/pabr/leansdr
-      dest: /home/{{ ham_user }}/hamradio/leansdr
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Build leansdr
-    command: make
-    args:
-      chdir: /home/{{ ham_user }}/hamradio/leansdr/src/apps
-
-  - name: Install leansdr (Makefile has no install target)
-    become: yes
-    command: install -o root "/home/{{ ham_user }}/hamradio/leansdr/src/apps/{{ item }}" /usr/bin
-    with_items:
-      - leanchansim
-      - leandvb
-      - leandvb_tui.sh
-      - leandvbtx
-      - leandvb_vt100ui.sh
-      - leanmlmrx
-      - leansdrcat
-      - leansdrscan
-      - leansdrserv
-      - leantsgen
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Remove build directory leansdr
-    file:
-      path: /home/{{ ham_user }}/hamradio/leansdr
-      state: absent
+    - name: Build + install leansdr apps
+      shell: |
+        set -e
+        cd /usr/local/src/leansdr/src/apps
+        make
+        for b in leandvb leandvbtx leansdrscan leansdrserv leantsgen leansdrcat leanchansim leanmlmrx; do
+          [ -x "$b" ] && install -m 0755 "$b" /usr/local/bin/ || true
+        done
+      args:
+        creates: /usr/local/bin/leandvb

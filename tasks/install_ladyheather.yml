@@ -1,59 +1,32 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Copyright 2020 - 2023, Dave Slotter (W3DJS). All rights reserved.
+# Lady Heather (KE5FX/Mark Sims) — GPS-disciplined-oscillator / timing monitor. Built from the
+# stargo Linux port against the X11 stack. GCC 14 needs -fpermissive for the old C++.
 #
-
-- name: Install Lady Heather
-  hosts: all
-  environment:
-    # Build-Time Tuning:
-    CXXFLAGS: -O2 -march=native -mtune=native
-    CFLAGS: -O2 -march=native -mtune=native
-    MAKEFLAGS: -j {{ ansible_processor_vcpus }}
+- name: Install Lady Heather (GPSDO monitor)
+  hosts: hampi
+  become: yes
+  tags: ladyheather
   tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name: [git, build-essential, libx11-dev]
 
-  - name: Install dependent libraries
-    become: yes
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - g++
-      - libx11-dev
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
+    - name: Clone LadyHeatherGPS (stargo Linux port)
+      git:
+        repo: https://github.com/stargo/LadyHeatherGPS.git
+        dest: /usr/local/src/LadyHeatherGPS
+        depth: 1
 
-  - name: Download and Unarchive Lady Heather
-    become: yes
-    unarchive:
-      src: "http://www.ke5fx.com/heather/heatherx11.zip"
-      dest: /usr
-      remote_src: yes
-    retries: 5
-    delay: 30
-    register: result
-    until: result.failed == false
-
-  - name: Build Lady Heather
-    become: yes
-    command: make
-    args:
-      chdir: /usr/heatherx11
-
-  - name: Remove Lady Heather cruft
-    become: yes
-    shell: rm *.o *.cpp *.ch heathosx makefile
-    args:
-      chdir: /usr/heatherx11
-      warn: no
-
-  - name: Change Ownership of /usr/heatherx11/heather.cfg to {{ ham_user }}
-    become: yes
-    file: dest=/usr/heatherx11/heather.cfg owner={{ ham_user }} group={{ ham_user}} mode=644
-
-  - name: Convert Windows line endings to Unix
-    become: yes
-    command: sed 's/\r//' -i "/usr/heatherx11/heather.cfg"
-    args:
-      warn: no
+    - name: Build + install heather
+      shell: |
+        set -e
+        cd /usr/local/src/LadyHeatherGPS
+        make CXX='g++ -fpermissive' || make
+        bin=$(find . -maxdepth 2 -type f -executable -name 'heather*' | head -1)
+        install -m 0755 "$bin" /usr/local/bin/heather
+      args:
+        creates: /usr/local/bin/heather

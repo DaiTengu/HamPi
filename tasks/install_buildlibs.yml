@@ -1,0 +1,20 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Build-support libraries the original HamPi compiled from source (custom CMake, wxWidgets
+# static lib, RtAudio) — all now current in Trixie apt for arm64, so just installed as packages.
+#
+- name: Install build-support libraries (cmake, wxWidgets, RtAudio)
+  hosts: hampi
+  become: yes
+  tags: buildlibs
+  tasks:
+    - name: Install from apt
+      apt:
+        state: present
+        name:
+          - cmake
+          - libwxgtk3.2-dev
+          - wx-common
+          - librtaudio-dev

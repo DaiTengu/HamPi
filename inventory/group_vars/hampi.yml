@@ -1,0 +1,20 @@
+# HamPi64 — a 64-bit fork of HamPi for Raspberry Pi OS Trixie / Pi 5 (github.com/DaiTengu/HamPi64).
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS   (original HamPi)
+# Copyright (C) 2026 Mike Miller, KD9QHQ        (HamPi64 fork)
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+---
+ham_user: "{{ ansible_user }}"          # the connecting user
+
+# Feature flags (optional/upstream apps). Core apt apps are always on.
+install_wsjtx_improved: true            # replaces mainline WSJT-X
+install_wsjtz: false                    # opt-in: source build (heavy); enable with -e install_wsjtz=true
+install_gridtracker: true
+install_pat: true
+
+# Upstream .deb version pins (bump = one-line edit)
+wsjtx_improved_version: "3.1.0"
+wsjtx_improved_build: "260522"
+wsjtx_improved_variant: "PLUS"          # PLUS | AL_PLUS | widescreen_PLUS
+wsjtx_improved_os: "trixie"             # match target OS codename
+gridtracker_version: "2.260705.2"

@@ -1,0 +1,20 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Additional APRS tools (Trixie apt, arm64), on top of Xastir + Direwolf (M1).
+# YAAC (Java) is a download, not apt — deferred to the source/download group.
+#
+- name: Install additional APRS tools
+  hosts: hampi
+  become: yes
+  tags: aprs_extras
+  tasks:
+    - name: apt-install APRS extras
+      apt:
+        update_cache: yes
+        state: present
+        name:
+          - aprsdigi      # APRS digipeater
+          - aprx          # APRS digipeater / iGate
+          - soundmodem    # soundcard packet-radio modem

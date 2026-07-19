@@ -1,0 +1,33 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# rscw (PA3FWM) — CW/Morse decoder using matched filtering. Tiny portable C (no apt package,
+# no prebuilt). Builds against libfftw3; optional rscwx GUI helper needs GTK2.
+#
+- name: Install rscw (CW decoder)
+  hosts: hampi
+  become: yes
+  tags: rscw
+  tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name:
+          - build-essential
+          - libfftw3-dev
+          - libgtk2.0-dev
+
+    - name: Build + install rscw
+      shell: |
+        set -e
+        mkdir -p /usr/local/src/rscw && cd /usr/local/src/rscw
+        curl -fsSL https://www.pa3fwm.nl/software/rscw/rscw-0.1e.tgz | tar xz
+        d=$(find . -name Makefile -printf '%h\n' | head -1); cd "$d"
+        make || true
+        for b in rscw rscwx noisycw rs12tlmdec; do
+          [ -x "$b" ] && install -m 0755 "$b" /usr/local/bin/ || true
+        done
+        test -x /usr/local/bin/rscw
+      args:
+        creates: /usr/local/bin/rscw

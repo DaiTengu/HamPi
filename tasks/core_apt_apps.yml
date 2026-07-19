@@ -1,0 +1,37 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Core amateur-radio apps available in Trixie arm64 apt (Tier 2).
+# Versions confirmed on-device 2026-07-14; see docs/superpowers/plans.
+#
+- name: Install Trixie apt core apps
+  hosts: hampi
+  become: yes
+  tags: core_apt
+  tasks:
+    - name: apt-install core ham apps
+      apt:
+        update_cache: yes
+        state: present
+        name:
+          - libhamlib-utils        # rig control (rigctl/rigctld)
+          - flrig                  # rig control GUI
+          - fldigi                 # digital modes
+          - flmsg                  # ICS-213 forms
+          - flamp                  # amateur multicast
+          - jtdx                   # FT8/FT4 (alt client)
+          - direwolf               # AX.25 / APRS TNC
+          - xastir                 # APRS GUI
+          - cqrlog                 # logging
+          - klog                   # logging
+          - xlog                   # logging
+          - trustedqsl             # LoTW (tqsl)
+          - soapysdr-tools         # SDR abstraction (SoapySDRUtil)
+          - soapysdr-module-all    # all Soapy driver modules
+          - rtl-sdr                # RTL-SDR tools
+          - gqrx-sdr               # SDR receiver GUI
+          - gpredict               # satellite tracking
+          - qsstv                  # slow-scan TV
+          - chirp                  # radio programming (chirp-next)
+          - js8call                # JS8 messaging (apt baseline; upstream 2.3.1 later)

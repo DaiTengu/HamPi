@@ -1,0 +1,94 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# WSJT-Z (SQ9FVE) — a WSJT-X fork with extended FT8/FT4 automation and filtering.
+# OPT-IN and OFF BY DEFAULT: upstream ships Windows-only binaries, so this is a full
+# WSJT-X source build (Qt5 + gfortran + boost). Enable with `-e install_wsjtz=true`
+# (or set install_wsjtz: true in group_vars). Built against Trixie's system Hamlib and
+# installed under /opt/wsjtz so it coexists with WSJT-X Improved (/usr/bin/wsjtx); the
+# `wsjtz` launcher gives it its own config via --rig-name so the two don't clash.
+#
+# NOTE: built UNPATCHED from the pinned upstream release. WSJT-Z 2.0.17 had a transmit
+# regression when Split Operation = "Fake It" (rig keys but no audio/power out — upstream
+# issue sq9fve/wsjt-z#111). If you hit it, bump wsjtz_version to a release where upstream has
+# fixed it, or apply your own local patch. WSJT-X Improved is the recommended default.
+#
+- name: Install WSJT-Z (opt-in source build)
+  hosts: hampi
+  become: yes
+  tags: wsjtz
+  vars:
+    wsjtz_version: "v2.0.17"
+  tasks:
+    - name: WSJT-Z (only when explicitly enabled)
+      when: install_wsjtz | default(false) | bool
+      block:
+        - name: Install build dependencies
+          apt:
+            state: present
+            name:
+              - git
+              - build-essential
+              - cmake
+              - gfortran
+              - libfftw3-dev
+              - libhamlib-dev
+              - libusb-1.0-0-dev
+              - libboost-all-dev
+              - qtbase5-dev
+              - qtmultimedia5-dev
+              - libqt5serialport5-dev
+              - qttools5-dev
+              - qttools5-dev-tools
+              - libqt5sql5-sqlite
+              - libqt5websockets5-dev
+
+        - name: Clone WSJT-Z (sq9fve), pinned release
+          git:
+            repo: https://github.com/sq9fve/wsjt-z.git
+            dest: /usr/local/src/wsjt-z
+            version: "{{ wsjtz_version }}"
+            depth: 1
+            force: yes
+          register: wsjtz_src
+
+        - name: Drop the old install when the source changed (so the build re-runs)
+          file:
+            path: /opt/wsjtz/bin/wsjtx
+            state: absent
+          when: wsjtz_src.changed
+
+        - name: Build + install WSJT-Z into /opt/wsjtz
+          shell: |
+            set -e
+            cd /usr/local/src/wsjt-z
+            rm -rf build && mkdir build && cd build
+            cmake -DCMAKE_BUILD_TYPE=Release -DWSJT_SKIP_MANPAGES=ON \
+                  -DWSJT_GENERATE_DOCS=OFF -DCMAKE_INSTALL_PREFIX=/opt/wsjtz ..
+            cmake --build . -j"$(nproc)"
+            cmake --build . --target install
+          args:
+            creates: /opt/wsjtz/bin/wsjtx
+
+        - name: WSJT-Z launcher (own config via --rig-name)
+          copy:
+            dest: /usr/local/bin/wsjtz
+            mode: "0755"
+            content: |
+              #!/bin/sh
+              # Separate config from WSJT-X Improved so the two don't overwrite each other.
+              exec /opt/wsjtz/bin/wsjtx --rig-name=WSJTZ "$@"
+
+        - name: WSJT-Z desktop entry
+          copy:
+            dest: /usr/share/applications/wsjtz.desktop
+            mode: "0644"
+            content: |
+              [Desktop Entry]
+              Name=WSJT-Z
+              Comment=WSJT-X fork with extended automation (FT8/FT4/etc.) — SQ9FVE
+              Exec=wsjtz
+              Terminal=false
+              Type=Application
+              Categories=HamRadio;

@@ -1,0 +1,47 @@
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# glfer — QRSS spectrogram display + QRSS keyer (in3otd). Autotools/GTK2 source build
+# (dropped from Debian as orphaned; builds fine on arm64). Serial-port keying only on
+# Pi 5 (the x86 parallel-port I/O path is autoconf-guarded out on ARM).
+#
+- name: Install glfer (QRSS)
+  hosts: hampi
+  become: yes
+  tags: glfer
+  tasks:
+    - name: Install build dependencies
+      apt:
+        state: present
+        name:
+          - git
+          - build-essential
+          - automake
+          - autoconf
+          - libtool
+          - libgtk2.0-dev
+          - libfftw3-dev
+          - libasound2-dev
+          # glfer uses OSS /dev/dsp (gone on Trixie); osspd provides it in userspace via PipeWire
+          - osspd
+          - osspd-pulseaudio
+
+    - name: Clone glfer (in3otd)
+      git:
+        repo: https://github.com/in3otd/glfer.git
+        dest: /usr/local/src/glfer
+        depth: 1
+
+    - name: Build + install glfer
+      shell: |
+        set -e
+        cd /usr/local/src/glfer
+        [ -x ./configure ] || autoreconf -fi
+        # GCC 14 turns implicit-decl / incompatible-pointer into hard errors; this 2010 code needs -fpermissive
+        ./configure --prefix=/usr/local CFLAGS="-O2 -fpermissive"
+        make clean || true
+        make -j"$(nproc)"
+        make install
+      args:
+        creates: /usr/local/bin/glfer

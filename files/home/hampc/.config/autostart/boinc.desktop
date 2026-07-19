@@ -1,6 +1,0 @@
-[Desktop Entry]
-Encoding=UTF-8
-Name=BOINC
-Exec=/home/hampc/.config/autostart/boinc.sh
-Terminal=false
-Type=Application

@@ -1,0 +1,3 @@
+# Real inventory holds host/user/key specifics — keep it local, never commit.
+hampi.ini
+*.local
