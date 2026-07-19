@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 HamPi64 contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later
 set -euo pipefail
 #
 # HamPi64 — standalone installer for HamRS (closed-source freeware logger).
@@ -8,7 +11,7 @@ set -euo pipefail
 # fetched from the vendor here, on this device, under HamRS's own license.
 # HamPi64 does not include or redistribute it.
 #
-# Copyright (C) 2026 Mike Miller, KD9QHQ
+# Copyright (C) 2026 HamPi64 contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 HAMRS_VERSION="2.52.0"

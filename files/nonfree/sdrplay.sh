@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 HamPi64 contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later
 set -euo pipefail
 #
 # HamPi64 — standalone installer for the SDRplay RSP API (PROPRIETARY, © SDRplay Ltd)
@@ -8,7 +11,7 @@ set -euo pipefail
 # task (-e include_nonfree=true). The vendor .run is fetched from sdrplay.com here,
 # on this device, under SDRplay's own license. HamPi64 does not redistribute it.
 #
-# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 HamPi64 contributors.
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 SDRPLAY_API_VERSION="3.15.2"          # vendor .run version

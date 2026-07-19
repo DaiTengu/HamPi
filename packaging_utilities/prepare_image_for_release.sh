@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
-# Copyright (C) 2026 Mike Miller, KD9QHQ
+# Copyright (C) 2026 HamPi64 contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 # prepare_image_for_release.sh — de-personalize a BUILT HamPi64 Pi just before you capture its

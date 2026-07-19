@@ -14,14 +14,14 @@
 + Will Sciaroni, W1AZZ
 + Christopher Adden
 + Thomas Bray, W8TJB
-+ KD9QHQ (DaiTengu) — HamPi64 maintainer (64-bit Raspberry Pi 5 / Trixie port)
++ Mike Miller, KD9QHQ — 64-bit Raspberry Pi 5 / Trixie port
 
 ##### THANK YOU TO ALL HAMPI / HAMPC CONTRIBUTORS!
 
 ##### AI assistance
 
-The HamPi64 fork (the 64-bit Trixie / Raspberry Pi 5 port) was developed by KD9QHQ with
+The HamPi64 fork (the 64-bit Trixie / Raspberry Pi 5 port) was developed by Mike Miller (KD9QHQ) with
 AI pair-programming assistance from Anthropic's Claude (via Claude Code) — used for porting,
-debugging, and packaging. All changes were reviewed and tested by the maintainer.
+debugging, and packaging. All changes were reviewed and tested on real hardware.
 
-###### Please send additions/corrections via a [GitHub issue](https://github.com/DaiTengu/HamPi64/issues).
+###### Contributions are welcome — please send additions/corrections via a [pull request](https://github.com/DaiTengu/HamPi64/pulls) (or an [issue](https://github.com/DaiTengu/HamPi64/issues)).

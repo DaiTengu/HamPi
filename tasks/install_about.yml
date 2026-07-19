@@ -1,10 +1,10 @@
 # HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
-# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 HamPi64 contributors.
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 # "About HamPi" menu entry + branding icons (Pi-only, unconditional).
-# NOTE: the about_hampi script + HamPi.desktop are inherited from W3DJS's HamPi;
-# content (version/credits) can be updated for the DaiTengu fork later.
+# NOTE: the about_hampi script + HamPi.desktop originate from W3DJS's HamPi, updated here
+# with HamPi64 branding and credits.
 #
 - name: About HamPi menu entry
   hosts: hampi

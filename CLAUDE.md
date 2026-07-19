@@ -2,7 +2,7 @@
 
 HamPi64 is a 64-bit fork of Dave Slotter's (W3DJS) **HamPi**: an Ansible playbook that turns a
 Raspberry Pi 5 running Raspberry Pi OS **"Trixie"** (Debian 13, aarch64) into a ready-to-use
-amateur-radio workstation. Maintained by Mike Miller (KD9QHQ). Licensed **GPL-3.0-or-later**.
+amateur-radio workstation. Licensed **GPL-3.0-or-later** and shared as-is ("works for me"); contributions are welcome via fork + pull request.
 
 This file orients a new contributor — human or AI — to how the repo is built and the conventions
 to follow.
@@ -40,7 +40,7 @@ Create `tasks/install_<app>.yml` as its own play and add one `import_playbook` l
 
 ```
 # HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
-# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 Mike Miller, KD9QHQ (HamPi64 fork).
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 HamPi64 contributors.
 # SPDX-License-Identifier: GPL-3.0-or-later
 ```
 

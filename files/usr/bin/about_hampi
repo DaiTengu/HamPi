@@ -2,7 +2,7 @@
 #
 # "About HamPi64" dialog.
 # HamPi64 is the 64-bit edition of HamPi, originally created by Dave Slotter (W3DJS).
-# This fork is maintained by KD9QHQ (github.com/DaiTengu/HamPi64), updated for 64-bit
+# This fork (github.com/DaiTengu/HamPi64) updates HamPi for 64-bit
 # Raspberry Pi OS Trixie on the Raspberry Pi 5.
 #
 VER=$(grep -o '".*"' /etc/hampi-release | sed 's/"//g' | head -n 1)
@@ -13,7 +13,7 @@ TEXT="${VER}
 
 HamPi64 is the 64-bit edition of <b>HamPi</b>, originally created by <b>Dave Slotter, W3DJS</b> (<a href=\"https://qrz.com/db/W3DJS\">qrz.com/db/W3DJS</a>).
 
-Maintained by <b>KD9QHQ</b>, updated for 64-bit Raspberry Pi OS (Trixie) on the Raspberry Pi 5.
+A 64-bit port for Raspberry Pi OS (Trixie) on the Raspberry Pi 5, by <b>Mike Miller (KD9QHQ)</b>.
 
 Project: <a href=\"${SUPPORT_URL}\">${SUPPORT_URL}</a>
 Bug reports: <a href=\"${BUG_REPORT_URL}\">${BUG_REPORT_URL}</a>

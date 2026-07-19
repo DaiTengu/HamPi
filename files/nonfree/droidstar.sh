@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# HamPi64 (github.com/DaiTengu/HamPi64) — 64-bit port of HamPi for Raspberry Pi OS Trixie / Pi 5.
+# Copyright (C) 2020-2024 Dave Slotter, W3DJS (original HamPi); (C) 2026 HamPi64 contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later
 set -euo pipefail
 #
 # HamPi64 — standalone installer for DroidStar (nostar) + the md380 AMBE vocoder.
@@ -10,7 +13,7 @@ set -euo pipefail
 # which is patent-encumbered (DVSI) and run via firmware extracted from a TYT MD-380.
 # HamPi64 does not redistribute the vocoder; it is built here, on this device.
 #
-# Copyright (C) 2026 Mike Miller, KD9QHQ
+# Copyright (C) 2026 HamPi64 contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 die() { echo "ERROR: $*" >&2; exit 1; }

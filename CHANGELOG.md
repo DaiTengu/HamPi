@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] — HamPi64 (64-bit Trixie / Raspberry Pi 5 fork)
 
-Fork of HamPi by **Mike Miller, KD9QHQ**, ported to 64-bit Raspberry Pi OS "Trixie" (Debian 13)
-on the Raspberry Pi 5 (aarch64). Developed with AI pair-programming assistance (see `CONTRIBUTORS.md`).
+A 64-bit port of HamPi to Raspberry Pi OS "Trixie" (Debian 13)
+on the Raspberry Pi 5 (aarch64), by Mike Miller (KD9QHQ). Developed with AI pair-programming assistance (see `CONTRIBUTORS.md`).
 
 ### Added
 - 64-bit Trixie / Pi 5 port using a tiered install strategy: Trixie apt → upstream arm64 prebuilt
@@ -29,7 +29,7 @@ on the Raspberry Pi 5 (aarch64). Developed with AI pair-programming assistance (
 
 ### Changed
 - Relicensed cleanly to **GPL-3.0-or-later**: added SPDX headers repo-wide; retained Dave Slotter
-  (W3DJS) copyright and added Mike Miller (KD9QHQ) fork copyright.
+  (W3DJS) copyright and added the HamPi64 fork copyright.
 - Rewrote SECURITY / CONTRIBUTING / CODE_OF_CONDUCT for HamPi64 with GitHub-based reporting.
 - Renamed the project and GitHub repository to **HamPi64**.
 - Desktop/audio stack updated for Trixie: PipeWire, labwc/Wayland, Qt plugin path via

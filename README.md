@@ -4,14 +4,31 @@
 collection for the Raspberry Pi originally created by **Dave Slotter (W3DJS)** (as
 "W3DJS Raspberry Pi for Ham Radio").
 
-This fork — [**DaiTengu/HamPi64**](https://github.com/DaiTengu/HamPi64), maintained by
-**KD9QHQ** — updates HamPi for **64-bit Raspberry Pi OS "Trixie" (Debian 13) on the
-Raspberry Pi 5**. Full credit for the original project goes to Dave Slotter and the HamPi
+This fork — [**DaiTengu/HamPi64**](https://github.com/DaiTengu/HamPi64) — updates HamPi for
+**64-bit Raspberry Pi OS "Trixie" (Debian 13) on the Raspberry Pi 5**. The 64-bit port is by **Mike Miller (KD9QHQ)**. Full credit for the original project goes to Dave Slotter and the HamPi
 contributors (see [`CONTRIBUTORS.md`](CONTRIBUTORS.md)). HamPi is free software under the
 **GNU GPL v3**.
 
 > The HamPi64 port was developed with AI pair-programming assistance (Anthropic's Claude, via
-> Claude Code), reviewed and tested by the maintainer. See [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
+> Claude Code), reviewed and tested on real hardware. See [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
+
+## Status & support
+
+**"Works for me."** HamPi64 is shared as-is under the GPL — **no warranty and no support**.
+It is built and used on this hardware:
+
+- Icom **IC-7300**
+- **Raspberry Pi 5 (8 GB)**
+- **Raspberry Pi Touch Display 2** + an external **HDMI** monitor
+
+Other rigs, HATs, and displays may or may not work. Nobody is promising to answer setup or
+support questions — but bug reports and, especially, fixes are very welcome (see below).
+
+## Contributing
+
+Contributions are welcome — **fork the repo and open a pull request.** A new app, an aarch64
+build fix, or a doc correction: a PR is the best way to improve HamPi64. See
+[`CONTRIBUTING.md`](CONTRIBUTING.md) and [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
 
 ## Documentation
 - **This fork:** [`docs/`](docs/) — coverage map and roadmap
@@ -20,7 +37,7 @@ contributors (see [`CONTRIBUTORS.md`](CONTRIBUTORS.md)). HamPi is free software 
 ## Licensing & non-free components
 
 The HamPi64 **playbook** (this repository) is licensed **GNU GPL v3** — it is a fork of
-HamPi and keeps Dave Slotter's (W3DJS) copyright alongside the fork maintainer's.
+HamPi and keeps Dave Slotter's (W3DJS) copyright alongside the HamPi64 contributors'.
 
 The playbook *installs* a lot of third-party software, and **each program keeps its own
 license** — the GPL here does not relicense them. Nearly all of it is free/open source.
