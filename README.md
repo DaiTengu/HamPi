@@ -5,7 +5,9 @@ collection for the Raspberry Pi originally created by **Dave Slotter (W3DJS)** (
 "W3DJS Raspberry Pi for Ham Radio").
 
 This fork — [**DaiTengu/HamPi64**](https://github.com/DaiTengu/HamPi64) — updates HamPi for
-**64-bit Raspberry Pi OS "Trixie" (Debian 13) on the Raspberry Pi 5**. The 64-bit port is by **Mike Miller (KD9QHQ)**. Full credit for the original project goes to Dave Slotter and the HamPi
+**64-bit Raspberry Pi OS "Trixie" (Debian 13) on the Raspberry Pi 5**. **It is Raspberry Pi–only** — the original HamPi's **HamPC** (x86 /
+Xubuntu) and **HamIQ** (Inovato Quadra) targets, and all the multi-platform machinery, have been
+removed. The 64-bit port is by **Mike Miller (KD9QHQ)**. Full credit for the original project goes to Dave Slotter and the HamPi
 contributors (see [`CONTRIBUTORS.md`](CONTRIBUTORS.md)). HamPi is free software under the
 **GNU GPL v3**.
 
@@ -20,6 +22,10 @@ It is built and used on this hardware:
 - Icom **IC-7300**
 - **Raspberry Pi 5 (8 GB)**
 - **Raspberry Pi Touch Display 2** + an external **HDMI** monitor
+
+Built and tested on the **Pi 5**. **Pi 4 (64-bit) support is planned but not yet tested** — if you
+try it, reports and fixes are welcome. Other Raspberry Pi models are unsupported (and non-Pi
+hardware entirely so — see the Raspberry Pi–only note above).
 
 Other rigs, HATs, and displays may or may not work. Nobody is promising to answer setup or
 support questions — but bug reports and, especially, fixes are very welcome (see below).

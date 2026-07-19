@@ -3,6 +3,11 @@
 Forward-looking work only. The big app-porting push is done — for the full picture of what's
 installed vs. not, see [`coverage.md`](coverage.md) (including the "Not in HamPi64" gap list).
 
+## Hardware
+- **Pi 4 (64-bit):** test the playbook + captured image on a Raspberry Pi 4 running 64-bit
+  Raspberry Pi OS Trixie. Currently built and tested on the **Pi 5** only. (HamPi64 is
+  Raspberry Pi–only — HamPC / HamIQ / other platforms were removed.)
+
 ## Version bumps (apt is behind upstream)
 - **JS8Call**: apt 2.2.0 → upstream 2.3.1
 - **Direwolf**: apt 1.7 → upstream 1.8.1
